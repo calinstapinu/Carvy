@@ -3,6 +3,7 @@
 ## Table of Contents
 
 1. [Description](#description)
+2. [Carvy Diagram](#carvy-diagram)
 
  # Description
 **Carvy is an application for a car dealership specializing in car sales and leasing. It allows the management of available car stock, adding new models, marking cars as sold or leased, and storing information about clients and employees. The application’s goal is to streamline the activity of a car dealership and simplify the sales and leasing contract management processes.**
@@ -45,3 +46,12 @@
       In addition to the monthly rate, this method calculates the total amount owed at the end of the contract, covering all associated costs.
    -  **Leasing Finalization:**
       A method that finalizes the leasing contract, updating the car's status and linking the client to the leasing contract in the databas.
+
+
+# Carvy Diagram
+ <div class="badges-gif">
+  <p align="right">
+    <img src="https://i.imgur.com/IRJ6wol.jpeg" width=100% align=center alt=TerraPulse-Demo>
+    <br><br>
+  </p>
+</div>
