@@ -39,11 +39,9 @@
    
    - **Monthly Rate Calculation:**
       Based on the contract duration and interest rate, this method adjusts the monthly rate to reflect the car's price, terms, and conditions.
-   - Rate Adjustment Based on Credit History:
+   -  **Rate Adjustment Based on Credit History:**
       If the client has a favorable credit history, the application can adjust the monthly rate, providing more advantageous terms.
-   - Total Amount Calculation:
+   -  **Total Amount Calculation:**
       In addition to the monthly rate, this method calculates the total amount owed at the end of the contract, covering all associated costs.
-
-  6. ***Leasing Finalization:***
-     
-     • A method that finalizes the leasing contract, updating the car's status and linking the client to the leasing contract in the databas 
+   -  **Leasing Finalization:**
+      A method that finalizes the leasing contract, updating the car's status and linking the client to the leasing contract in the databas.
