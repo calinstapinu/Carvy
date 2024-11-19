@@ -1,4 +1,6 @@
 package model.enums;
 
-public class Role {
+public enum Role {
+    MANAGER,
+    SALESPERSON
 }

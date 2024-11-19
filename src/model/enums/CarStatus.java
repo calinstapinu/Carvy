@@ -1,4 +1,7 @@
 package model.enums;
 
-public class CarStatus {
+public enum CarStatus {
+    AVAILABLE,
+    SOLD,
+    LEASED
 }
