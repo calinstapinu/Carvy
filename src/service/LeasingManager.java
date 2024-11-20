@@ -3,14 +3,16 @@ package service;
 import model.Client;
 import model.Leasing;
 
+/**
+ * Interface for managing leasing-related calculations.
+ * Provides methods for calculating total amounts, monthly rates,
+ * and adjusting rates based on client credit history.
+ */
 public interface LeasingManager {
-    // Calculează suma totală pentru un contract de leasing
+
     float calculateTotalAmount(Leasing leasing);
 
-    // Calculează rata lunară pentru un contract de leasing
     float calculateMonthlyRate(int durationMonths, float monthlyRate);
 
-
-    // Ajustează rata lunară pe baza istoricului creditului clientului
     float adjustRateBasedOnCredit(Client client, float baseRate);
 }
