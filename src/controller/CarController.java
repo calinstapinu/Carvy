@@ -63,4 +63,13 @@ public class CarController {
             System.err.println("Error: " + e.getMessage());
         }
     }
+
+    public Car findCarById(long carId) {
+        return carService.findCarById(carId);
+    }
+
+    public List<Car> findCarsByName(String name) {
+        return carService.findCarsByName(name); // Implement in `CarService`
+    }
+
 }

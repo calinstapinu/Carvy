@@ -5,6 +5,7 @@ import model.enums.CarStatus;
 import repository.CarRepository;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Service class for managing {@link Car} entities.
@@ -79,5 +80,12 @@ public class CarService {
             throw new IllegalArgumentException("The Car with ID " + carId + " does not exist.");
         }
         return car;
+    }
+
+    public List<Car> findCarsByName(String name) {
+        return carRepository.readAll().stream()
+                .filter(car -> car.getModel().toLowerCase().contains(name.toLowerCase()) ||
+                        car.getBrand().toLowerCase().contains(name.toLowerCase()))
+                .collect(Collectors.toList());
     }
 }

@@ -11,12 +11,15 @@ import service.ClientService;
 import repository.*;
 import service.*;
 
+import java.util.List;
+
 /**
  * Entry point for the Carvy dealership application.
  * Provides a console-based menu for managing cars, clients, employees, leasing contracts, and transactions.
  */
 public class ConsoleApp {
     public static void main(String[] args) {
+
         // Initialize repositories
         CarRepository carRepo = new CarRepository();
         ClientRepository clientRepo = new ClientRepository();
@@ -42,10 +45,37 @@ public class ConsoleApp {
         LeasingController leasingController = new LeasingController(leasingService);
         TransactionController transactionController = new TransactionController(transactionService);
 
-        // Main menu
+        boolean appRunning = true;
+        while (appRunning) {
+            int userType = MenuHandler.showMenu("Welcome to Carvy - Your Dealership", new String[]{
+                    "Administrator",
+                    "Client"
+            });
+
+            switch (userType) {
+                case 1 ->
+                        adminMenu(carController, clientController, employeeController, leasingController, transactionController, carService, clientService);
+                case 2 -> clientMenu(carController, leasingController, clientService);
+                case 3 -> {
+                    System.out.println("Exiting the application...");
+                    appRunning = false; // Ends the application
+                }
+            }
+        }
+    }
+
+    private static void adminMenu(
+            CarController carController,
+            ClientController clientController,
+            EmployeeController employeeController,
+            LeasingController leasingController,
+            TransactionController transactionController,
+            CarService carService,
+            ClientService clientService
+    ) {
         boolean running = true;
         while (running) {
-            int choice = MenuHandler.showMenu("Carvy - Your Dealership", new String[]{
+            int choice = MenuHandler.showMenu("Administrator Menu", new String[]{
                     "Manage Cars",
                     "Manage Clients",
                     "Manage Employees",
@@ -62,11 +92,69 @@ public class ConsoleApp {
                 case 0 -> {
                     System.out.println("Exiting...");
                     running = false;
+
                 }
                 default -> System.out.println("Invalid option!");
             }
         }
     }
+
+    private static void clientMenu(CarController carController, LeasingController leasingController, ClientService clientService) {
+        boolean running = true;
+        while (running) {
+            int choice = MenuHandler.showMenu("Client Menu", new String[]{
+                    "View Available Cars",
+                    "Search Car by ID",
+                    "Search Car by Name",
+                    "Calculate Leasing Estimate"
+            });
+
+            switch (choice) {
+                case 1 -> carController.listAvailableCars();
+                case 2 -> {
+                    long carId = MenuHandler.readLong("Enter Car ID: ");
+                    try {
+                        Car car = carController.findCarById(carId); // Add a `findCarById` method in `CarController` if needed
+                        System.out.println(car);
+                    } catch (Exception e) {
+                        System.err.println("Error: " + e.getMessage());
+                    }
+                }
+                case 3 -> {
+                    String carName = MenuHandler.readText("Enter Car Name: ");
+                    try {
+                        // Assuming a method exists to search cars by name
+                        List<Car> cars = carController.findCarsByName(carName);
+                        cars.forEach(System.out::println);
+                    } catch (Exception e) {
+                        System.err.println("Error: " + e.getMessage());
+                    }
+                }
+                case 4 -> {
+                    // Leasing estimate calculation
+                    long carId = MenuHandler.readLong("Enter Car ID: ");
+                    try {
+                        Car car = carController.findCarById(carId);
+                        int durationMonths = MenuHandler.readInt("Enter duration in months: ");
+                        float interestRate = MenuHandler.readFloat("Enter interest rate (%): ");
+                        float monthlyRate = leasingController.calculateMonthlyRate(durationMonths, car.getPrice());
+
+                        System.out.println("Leasing Estimate:");
+                        System.out.println("Monthly Rate: " + monthlyRate);
+                    } catch (Exception e) {
+                        System.err.println("Error: " + e.getMessage());
+                    }
+                }
+                case 0 -> {
+                    System.out.println("Returning to the main menu...");
+                    running = false;
+                }
+                default -> System.out.println("Invalid option!");
+            }
+        }
+    }
+
+
 
     private static void carMenu(CarController carController) {
         boolean inCarMenu = true;

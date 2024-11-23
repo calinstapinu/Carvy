@@ -75,4 +75,9 @@ public class LeasingController {
             System.err.println("Error: " + e.getMessage());
         }
     }
+
+
+    public float calculateMonthlyRate(int durationMonths, float carPrice) {
+        return leasingService.calculateMonthlyRate(durationMonths, carPrice);
+    }
 }

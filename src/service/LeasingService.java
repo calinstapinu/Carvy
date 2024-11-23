@@ -92,4 +92,22 @@ public class LeasingService {
     public float calculateTotalAmount(Leasing leasing) {
         return leasingManager.calculateTotalAmount(leasing);
     }
+
+    /**
+     * Calculates the monthly leasing rate based on the car price, contract duration, and interest rate.
+     *
+     * @param durationMonths the duration of the leasing contract in months
+     * @param carPrice       the price of the car
+     * @return the calculated monthly rate
+     */
+    public float calculateMonthlyRate(int durationMonths, float carPrice) {
+        if (durationMonths <= 0) {
+            throw new IllegalArgumentException("Duration must be greater than 0 months.");
+        }
+        // Assuming a flat interest rate of 5% as an example (this can be dynamic or passed as a parameter)
+        float interestRate = 0.05f;
+
+        // Monthly payment formula: (CarPrice + (CarPrice * InterestRate)) / Duration
+        return (carPrice + (carPrice * interestRate)) / durationMonths;
+    }
 }
