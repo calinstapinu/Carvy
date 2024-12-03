@@ -11,13 +11,32 @@ import model.Leasing;
 public class LeasingManagerImpl implements LeasingManager {
 
     @Override
-    public float calculateTotalAmount(Leasing leasing) {
-        return leasing.getMonthlyRate() * leasing.getDurationMonths();
+    public float calculateTotalAmount(float monthlyRate, int durationMonths, float adminFee, float taxRate) {
+        float baseAmount = monthlyRate * durationMonths;
+        float totalBeforeTax = baseAmount + adminFee;
+        return totalBeforeTax + (totalBeforeTax * (taxRate / 100));
     }
 
+
     @Override
-    public float calculateMonthlyRate(int durationMonths, float monthlyRate) {
-        return monthlyRate / durationMonths;
+    public float calculateMonthlyRate(float carPrice, int durationMonths, float annualInterestRate, float downPayment) {
+        if (durationMonths <= 0) {
+            throw new IllegalArgumentException("Duration must be greater than 0 months.");
+        }
+        if (carPrice <= 0 || carPrice <= downPayment) {
+            throw new IllegalArgumentException("Car price must be greater than 0 and higher than the down payment.");
+        }
+        if (annualInterestRate < 0) {
+            throw new IllegalArgumentException("Interest rate cannot be negative.");
+        }
+
+        float principal = carPrice - downPayment;
+        float monthlyInterestRate = annualInterestRate / 100 / 12;
+
+        float numerator = principal * monthlyInterestRate * (float) Math.pow(1 + monthlyInterestRate, durationMonths);
+        float denominator = (float) (Math.pow(1 + monthlyInterestRate, durationMonths) - 1);
+
+        return numerator / denominator;
     }
 
     /**

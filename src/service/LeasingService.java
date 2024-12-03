@@ -34,18 +34,18 @@ public class LeasingService {
      *
      * @param leasing the {@link Leasing} contract to add
      */
-    public void addLeasing(Leasing leasing) {
-        // Calculate the monthly rate and total amount using the LeasingManager
+    public void addLeasing(Leasing leasing, float downPayment, float adminFee, float taxRate) {
         float monthlyRate = leasingManager.calculateMonthlyRate(
+                leasing.getCar().getPrice(),
                 leasing.getDurationMonths(),
-                leasing.getCar().getPrice()
+                leasing.getInterestRate(),
+                downPayment
         );
         leasing.setMonthlyRate(monthlyRate);
 
-        float totalAmount = leasingManager.calculateTotalAmount(leasing);
+        float totalAmount = leasingManager.calculateTotalAmount(monthlyRate, leasing.getDurationMonths(), adminFee, taxRate);
         leasing.setTotalAmount(totalAmount);
 
-        // Save the leasing contract
         leasingRepository.create(leasing);
     }
 
@@ -83,14 +83,32 @@ public class LeasingService {
     }
 
     /**
-     * Calculates the total amount for a leasing contract.
-     * Delegates the calculation to the {@link LeasingManager}.
+     * Calculates the total amount for a leasing contract, including fees and taxes.
      *
-     * @param leasing the {@link Leasing} contract for which the total amount is calculated
-     * @return the total amount for the specified leasing contract
+     * @param monthlyRate    the calculated monthly rate
+     * @param durationMonths the duration of the leasing contract in months
+     * @param adminFee       a one-time administrative fee
+     * @param taxRate        the tax rate as a percentage (e.g., 8 for 8%)
+     * @return the total amount for the leasing contract
      */
-    public float calculateTotalAmount(Leasing leasing) {
-        return leasingManager.calculateTotalAmount(leasing);
+    public float calculateTotalAmount(float monthlyRate, int durationMonths, float adminFee, float taxRate) {
+        if (durationMonths <= 0) {
+            throw new IllegalArgumentException("Duration must be greater than 0 months.");
+        }
+        if (taxRate < 0) {
+            throw new IllegalArgumentException("Tax rate cannot be negative.");
+        }
+
+        // Total base payment
+        float baseAmount = monthlyRate * durationMonths;
+
+        // Add administrative fees
+        float totalBeforeTax = baseAmount + adminFee;
+
+        // Apply taxes
+        float totalWithTax = totalBeforeTax + (totalBeforeTax * (taxRate / 100));
+
+        return totalWithTax;
     }
 
     /**
@@ -100,14 +118,27 @@ public class LeasingService {
      * @param carPrice       the price of the car
      * @return the calculated monthly rate
      */
-    public float calculateMonthlyRate(int durationMonths, float carPrice) {
+    public float calculateMonthlyRate(float carPrice, int durationMonths, float annualInterestRate, float downPayment) {
         if (durationMonths <= 0) {
             throw new IllegalArgumentException("Duration must be greater than 0 months.");
         }
-        // Assuming a flat interest rate of 5% as an example (this can be dynamic or passed as a parameter)
-        float interestRate = 0.05f;
+        if (carPrice <= 0 || carPrice <= downPayment) {
+            throw new IllegalArgumentException("Car price must be greater than 0 and higher than the down payment.");
+        }
+        if (annualInterestRate < 0) {
+            throw new IllegalArgumentException("Interest rate cannot be negative.");
+        }
 
-        // Monthly payment formula: (CarPrice + (CarPrice * InterestRate)) / Duration
-        return (carPrice + (carPrice * interestRate)) / durationMonths;
+        // Adjust the principal amount by subtracting the down payment
+        float principal = carPrice - downPayment;
+
+        // Convert annual interest rate to a monthly interest rate (as a decimal)
+        float monthlyInterestRate = annualInterestRate / 100 / 12;
+
+        // Apply the formula for monthly payments with interest
+        float numerator = principal * monthlyInterestRate * (float) Math.pow(1 + monthlyInterestRate, durationMonths);
+        float denominator = (float) (Math.pow(1 + monthlyInterestRate, durationMonths) - 1);
+
+        return numerator / denominator; // Monthly payment
     }
 }

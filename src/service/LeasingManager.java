@@ -9,10 +9,8 @@ import model.Leasing;
  * and adjusting rates based on client credit history.
  */
 public interface LeasingManager {
-
-    float calculateTotalAmount(Leasing leasing);
-
-    float calculateMonthlyRate(int durationMonths, float monthlyRate);
-
+    float calculateMonthlyRate(float carPrice, int durationMonths, float annualInterestRate, float downPayment);
+    float calculateTotalAmount(float monthlyRate, int durationMonths, float adminFee, float taxRate);
     float adjustRateBasedOnCredit(Client client, float baseRate);
+
 }

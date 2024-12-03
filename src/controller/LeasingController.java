@@ -21,13 +21,13 @@ public class LeasingController {
     }
 
 
-    public void createLeasing(long leasingId, Car car, Client client, int durationMonths, float interestRate) {
+    public void createLeasing(long leasingId, Car car, Client client, int durationMonths, float interestRate, float downPayment, float adminFee, float taxRate) {
         try {
             Leasing leasing = new Leasing(leasingId, car, client, durationMonths, interestRate);
-            leasingService.addLeasing(leasing);
+            leasingService.addLeasing(leasing, downPayment, adminFee, taxRate);
             System.out.println("The Leasing Contract was successfully created.");
         } catch (Exception e) {
-            System.err.println("There is an error when creating the contract: " + e.getMessage());
+            System.err.println("There was an error creating the contract: " + e.getMessage());
         }
     }
 
@@ -39,7 +39,7 @@ public class LeasingController {
     public void listLeasingsByClient(Client client) {
         try {
             List<Leasing> leasings = leasingService.findLeasingsByClient(client);
-            System.out.println("The Leasing Contract associated with " + client.getFullName() + ":");
+            System.out.println("The Leasing Contracts associated with " + client.getFullName() + ":");
             leasings.forEach(System.out::println);
         } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
@@ -66,18 +66,27 @@ public class LeasingController {
      *
      * @param leasingId the ID of the leasing contract for which the total amount is calculated
      */
-    public void calculateTotalAmount(long leasingId) {
+    public float calculateTotalAmount(long leasingId, float adminFee, float taxRate)
+    {
         try {
+            // Retrieve the leasing contract by ID
             Leasing leasing = leasingService.findLeasingById(leasingId);
-            float totalAmount = leasingService.calculateTotalAmount(leasing);
-            System.out.println("The total sum of the Leasing Contract with the ID " + leasingId + " is: " + totalAmount);
+
+            // Calculate the total amount using the leasing service
+            float totalAmount = leasingService.calculateTotalAmount(
+                    leasing.getMonthlyRate(),
+                    leasing.getDurationMonths(),
+                    adminFee,
+                    taxRate
+            );
+
+            // Return the calculated total amount
+            return totalAmount;
+
         } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
+            // Handle errors and return 0 in case of failure
+            System.err.println("Error calculating total amount: " + e.getMessage());
+            return 0;
         }
-    }
-
-
-    public float calculateMonthlyRate(int durationMonths, float carPrice) {
-        return leasingService.calculateMonthlyRate(durationMonths, carPrice);
     }
 }

@@ -55,7 +55,7 @@ public class ConsoleApp {
             switch (userType) {
                 case 1 ->
                         adminMenu(carController, clientController, employeeController, leasingController, transactionController, carService, clientService);
-                case 2 -> clientMenu(carController, leasingController, clientService);
+                case 2 -> clientMenu(carController, leasingController, clientService, leasingService);
                 case 3 -> {
                     System.out.println("Exiting the application...");
                     appRunning = false; // Ends the application
@@ -99,7 +99,7 @@ public class ConsoleApp {
         }
     }
 
-    private static void clientMenu(CarController carController, LeasingController leasingController, ClientService clientService) {
+    private static void clientMenu(CarController carController, LeasingController leasingController, ClientService clientService, LeasingService leasingService) {
         boolean running = true;
         while (running) {
             int choice = MenuHandler.showMenu("Client Menu", new String[]{
@@ -131,16 +131,19 @@ public class ConsoleApp {
                     }
                 }
                 case 4 -> {
-                    // Leasing estimate calculation
                     long carId = MenuHandler.readLong("Enter Car ID: ");
-                    try {
-                        Car car = carController.findCarById(carId);
-                        int durationMonths = MenuHandler.readInt("Enter duration in months: ");
-                        float interestRate = MenuHandler.readFloat("Enter interest rate (%): ");
-                        float monthlyRate = leasingController.calculateMonthlyRate(durationMonths, car.getPrice());
+                    int durationMonths = MenuHandler.readInt("Enter duration in months: ");
+                    float interestRate = MenuHandler.readFloat("Enter annual interest rate: ");
+                    float downPayment = MenuHandler.readFloat("Enter down payment: ");
+                    float adminFee = 200.0f; // Example static admin fee
+                    float taxRate = 8.0f; // Example static tax rate
 
-                        System.out.println("Leasing Estimate:");
+                    try {
+                        float monthlyRate = leasingService.calculateMonthlyRate(30000, durationMonths, interestRate, downPayment);
+                        float totalAmount = leasingService.calculateTotalAmount(monthlyRate, durationMonths, adminFee, taxRate);
+
                         System.out.println("Monthly Rate: " + monthlyRate);
+                        System.out.println("Total Amount: " + totalAmount);
                     } catch (Exception e) {
                         System.err.println("Error: " + e.getMessage());
                     }
@@ -310,8 +313,12 @@ public class ConsoleApp {
 
                         int durationMonths = MenuHandler.readInt("Contract Duration (months): ");
                         float interestRate = MenuHandler.readFloat("Interest Rate: ");
+                        float downPayment = MenuHandler.readFloat("Down Payment: ");
+                        float adminFee = MenuHandler.readFloat("Administrative Fee: ");
+                        float taxRate = MenuHandler.readFloat("Tax Rate (%): ");
 
-                        leasingController.createLeasing(leasingId, car, client, durationMonths, interestRate);
+                        leasingController.createLeasing(leasingId, car, client, durationMonths, interestRate, downPayment, adminFee, taxRate);
+
                     } catch (IllegalArgumentException e) {
                         System.err.println("Error: " + e.getMessage());
                     }
@@ -332,7 +339,10 @@ public class ConsoleApp {
                 }
                 case 4 -> {
                     long leasingId = MenuHandler.readLong("Leasing Contract ID: ");
-                    leasingController.calculateTotalAmount(leasingId);
+                    float adminFee = MenuHandler.readFloat("Administrative Fee: ");
+                    float taxRate = MenuHandler.readFloat("Tax Rate (%): ");
+
+                    leasingController.calculateTotalAmount(leasingId, adminFee, taxRate);
                 }
                 case 0 -> {
                     System.out.println("Returning to the main menu...");
