@@ -17,8 +17,8 @@ public class ClientController {
     }
 
     // Adaugă un client nou
-    public void addClient(String firstName, String lastName, String cnp) {
-        Client client = new Client(firstName, lastName, cnp, 0);
+    public void addClient(String firstName, String lastName, String cnp, Long clientId) {
+        Client client = new Client(firstName, lastName, cnp, clientId);
         clientService.addClient(client);
         System.out.println("The Client has been added successfully.");
     }

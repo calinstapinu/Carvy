@@ -2,7 +2,9 @@ package repository;
 
 import model.Transaction;
 import model.enums.TransactionType;
+import repository.parsers.TransactionParser;
 
+import java.io.File;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -11,8 +13,10 @@ import java.util.stream.Collectors;
  * Repository for managing {@link Transaction} entities.
  * Provides additional methods specific to transaction operations.
  */
-public class TransactionRepository extends InMemoryRepository<Transaction> {
-
+public class TransactionRepository extends FileRepository<Transaction> {
+    public TransactionRepository(File file, TransactionParser parser) {
+        super(file, parser);
+    }
     /**
      * Finds all transactions of a specific type.
      *

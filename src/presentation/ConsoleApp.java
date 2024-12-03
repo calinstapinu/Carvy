@@ -11,6 +11,13 @@ import service.ClientService;
 import repository.*;
 import service.*;
 
+import repository.parsers.CarParser;
+import repository.parsers.ClientParser;
+import repository.parsers.EmployeeParser;
+import repository.parsers.LeasingParser;
+import repository.parsers.TransactionParser;
+
+import java.io.File;
 import java.util.List;
 
 /**
@@ -20,12 +27,20 @@ import java.util.List;
 public class ConsoleApp {
     public static void main(String[] args) {
 
-        // Initialize repositories
-        CarRepository carRepo = new CarRepository();
-        ClientRepository clientRepo = new ClientRepository();
-        EmployeeRepository employeeRepo = new EmployeeRepository();
-        LeasingRepository leasingRepo = new LeasingRepository();
-        TransactionRepository transactionRepo = new TransactionRepository();
+        // Initialize files
+        File carFile = new File("data/cars.txt");
+        File clientFile = new File("data/clients.txt");
+        File employeeFile = new File("data/employees.txt");
+        File leasingFile = new File("data/leasings.txt");
+        File transactionFile = new File("data/transactions.txt");
+
+// Initialize repositories with specific types and parsers
+        CarRepository carRepo = new CarRepository(carFile, new CarParser());
+        ClientRepository clientRepo = new ClientRepository(clientFile, new ClientParser());
+        EmployeeRepository empRepo = new EmployeeRepository(employeeFile, new EmployeeParser());
+        LeasingRepository leasingRepo = new LeasingRepository(leasingFile, new LeasingParser(new CarParser(), new ClientParser()));
+        TransactionRepository transactionRepo = new TransactionRepository(transactionFile, new TransactionParser(new CarParser(), new ClientParser()));
+
 
         // Initialize leasing manager
         LeasingManager leasingManager = new LeasingManagerImpl();
@@ -34,9 +49,10 @@ public class ConsoleApp {
         // Initialize services
         CarService carService = new CarService(carRepo);
         ClientService clientService = new ClientService(clientRepo);
-        EmployeeService employeeService = new EmployeeService(employeeRepo);
+        EmployeeService employeeService = new EmployeeService(empRepo);
         LeasingService leasingService = new LeasingService(leasingRepo, leasingManager, leasingManagerImpl);
         TransactionService transactionService = new TransactionService(transactionRepo);
+
 
         // Initialize controllers
         CarController carController = new CarController(carService);
@@ -165,7 +181,8 @@ public class ConsoleApp {
             int choice = MenuHandler.showMenu("Manage Cars", new String[]{
                     "Add Car",
                     "List All Cars",
-                    "List Available Cars",
+                    "Cars by Sorting",
+                    "Cars by Filtering",
                     "Mark Car as SOLD",
                     "Mark Car as LEASED"
             });
@@ -181,12 +198,13 @@ public class ConsoleApp {
                     carController.addCar(carId, brand, model, year, price, mileage);
                 }
                 case 2 -> carController.listAllCars();
-                case 3 -> carController.listAvailableCars();
-                case 4 -> {
+                case 3 -> carSortingMenu(carController); // Navigate to sorting submenu
+                case 4 -> carFilteringMenu(carController);
+                case 5 -> {
                     long carId = MenuHandler.readInt("Car ID: ");
                     carController.markCarAsSold(carId);
                 }
-                case 5 -> {
+                case 6 -> {
                     long carId = MenuHandler.readInt("Car ID: ");
                     carController.markCarAsLeased(carId);
                 }
@@ -198,6 +216,56 @@ public class ConsoleApp {
             }
         }
     }
+
+    private static void carSortingMenu(CarController carController) {
+        boolean inSortingMenu = true;
+        while (inSortingMenu) {
+            int choice = MenuHandler.showMenu("Cars by Sorting", new String[]{
+                    "List Available Cars",
+                    "List Sold Cars",
+                    "List Leased Cars"
+            });
+
+            switch (choice) {
+                case 1 -> carController.listAvailableCars();
+                case 2 -> carController.listSoldCars();
+                case 3 -> carController.listLeasedCars();
+                case 0 -> {
+                    System.out.println("Returning to the car menu...");
+                    inSortingMenu = false;
+                }
+                default -> System.out.println("Invalid option!");
+            }
+        }
+    }
+
+    private static void carFilteringMenu(CarController carController) {
+        boolean inFilteringMenu = true;
+        while (inFilteringMenu) {
+            int choice = MenuHandler.showMenu("Cars by Filtering", new String[]{
+                    "Filter by Year",
+                    "Filter by Budget"
+            });
+
+            switch (choice) {
+                case 1 -> {
+                    int year = MenuHandler.readInt("Cars newer than: ");
+                    carController.listCarsNewerThan(year);
+                }
+                case 2 -> {
+                    int maxBudget = MenuHandler.readInt("Your Maximum Budget: ");
+                    carController.listCarsWithinBudget(maxBudget);
+                }
+                case 0 -> {
+                    System.out.println("Returning to the car menu...");
+                    inFilteringMenu = false;
+                }
+                default -> System.out.println("Invalid option!");
+            }
+        }
+    }
+
+
 
     private static void clientMenu(ClientController clientController) {
         boolean inClientMenu = true;
@@ -213,10 +281,11 @@ public class ConsoleApp {
 
             switch (choice) {
                 case 1 -> {
+                    Long clientId = MenuHandler.readLong("Client ID: ");
                     String firstName = MenuHandler.readText("First Name: ");
                     String lastName = MenuHandler.readText("Last Name: ");
                     String cnp = MenuHandler.readText("CNP: ");
-                    clientController.addClient(firstName, lastName, cnp);
+                    clientController.addClient(firstName, lastName, cnp, clientId);
                 }
                 case 2 -> clientController.listAllClients();
                 case 3 -> {
@@ -254,11 +323,12 @@ public class ConsoleApp {
 
             switch (choice) {
                 case 1 -> {
+                    Long employeeId = MenuHandler.readLong("Employee ID: ");
                     String firstName = MenuHandler.readText("First Name: ");
                     String lastName = MenuHandler.readText("Last Name: ");
                     String cnp = MenuHandler.readText("CNP: ");
                     String role = MenuHandler.readText("Role (e.g., Salesperson, Manager): ");
-                    employeeController.addEmployee(firstName, lastName, cnp, role);
+                    employeeController.addEmployee(firstName, lastName, cnp, employeeId, role);
                 }
                 case 2 -> employeeController.listAllEmployees();
                 case 3 -> {
@@ -296,8 +366,6 @@ public class ConsoleApp {
         while (inLeasingMenu) {
             int choice = MenuHandler.showMenu("Manage Leasing Contracts", new String[]{
                     "Create Leasing Contract",
-                    "List Client's Leasing Contracts",
-                    "Find Leasing Contract by ID",
                     "Calculate Total Amount for Leasing Contract"
             });
 
@@ -323,21 +391,21 @@ public class ConsoleApp {
                         System.err.println("Error: " + e.getMessage());
                     }
                 }
+//                case 2 -> {
+//                    long clientId = MenuHandler.readLong("Client ID: ");
+//
+//                    try {
+//                        Client client = clientService.findClientById(clientId);
+//                        leasingController.listLeasingsByClient(client);
+//                    } catch (IllegalArgumentException e) {
+//                        System.err.println("Error: " + e.getMessage());
+//                    }
+//                }
+//                case 2 -> {
+//                    long leasingId = MenuHandler.readLong("Leasing Contract ID: ");
+//                    leasingController.findLeasingById(leasingId);
+//                }
                 case 2 -> {
-                    long clientId = MenuHandler.readLong("Client ID: ");
-
-                    try {
-                        Client client = clientService.findClientById(clientId);
-                        leasingController.listLeasingsByClient(client);
-                    } catch (IllegalArgumentException e) {
-                        System.err.println("Error: " + e.getMessage());
-                    }
-                }
-                case 3 -> {
-                    long leasingId = MenuHandler.readLong("Leasing Contract ID: ");
-                    leasingController.findLeasingById(leasingId);
-                }
-                case 4 -> {
                     long leasingId = MenuHandler.readLong("Leasing Contract ID: ");
                     float adminFee = MenuHandler.readFloat("Administrative Fee: ");
                     float taxRate = MenuHandler.readFloat("Tax Rate (%): ");
@@ -354,58 +422,63 @@ public class ConsoleApp {
     }
 
     private static void transactionMenu(TransactionController transactionController, CarService carService, ClientService clientService) {
-        boolean inCarMenu = true;
+        boolean inTransactionMenu = true;
 
-        while (inCarMenu) {
-            int choice = MenuHandler.showMenu("Gestionare Tranzacții", new String[]{
-                    "Creează Tranzacție",
-                    "Listează Toate Tranzacțiile",
-                    "Listează Tranzacții După Tip"
+        while (inTransactionMenu) {
+            int choice = MenuHandler.showMenu("Manage Transactions", new String[]{
+                    "Add Transaction",
+                    "List All Transactions",
+                    "List Transactions by Type"
             });
 
             switch (choice) {
-                case 1 -> {
-                    long transactionId = MenuHandler.readLong("Transaction ID: ");
-                    long carId = MenuHandler.readLong("ID Mașină: ");
-                    String clientName = MenuHandler.readText("Nume Client: ");
-                    String transactionTypeInput = MenuHandler.readText("Tip Tranzacție (SOLD/LEASED): ").toUpperCase();
-
+                case 1 -> { // Adding a transaction
                     try {
-                        // Obține mașina din serviciu
-                        Car car = carService.findCarById(carId);
+                        long transactionId = MenuHandler.readLong("Transaction ID: ");
+                        long carId = MenuHandler.readLong("Car ID: ");
+                        long clientId = MenuHandler.readLong("Client ID: "); // Requesting Client ID instead of Name
 
-                        // Obține clientul din serviciu
-                        Client client = clientService.findClientByName(clientName);
+                        // Read and validate TransactionType
+                        String transactionTypeInput = MenuHandler.readText("Transaction Type (SOLD/LEASED): ").trim().toUpperCase();
 
-                        // Validăm tipul tranzacției
+                        if (!transactionTypeInput.equals("SOLD") && !transactionTypeInput.equals("LEASED")) {
+                            throw new IllegalArgumentException("Invalid Transaction Type! Please choose SOLD / LEASED.");
+                        }
+
                         TransactionType transactionType = TransactionType.valueOf(transactionTypeInput);
 
-                        // Creăm tranzacția
+                        // Fetch car and client using IDs
+                        Car car = carService.findCarById(carId);
+                        Client client = clientService.findClientById(clientId); // Use Client ID to find the client
+
+                        // Create and add the transaction
                         Transaction transaction = new Transaction(transactionId, car, client, transactionType, new java.util.Date());
                         transactionController.addTransaction(transaction);
-                        System.out.println("Tranzacția a fost adăugată cu succes.");
+                        System.out.println("Transaction added successfully.");
                     } catch (IllegalArgumentException e) {
-                        System.err.println("Tip de tranzacție invalid! Te rog să introduci SOLD sau LEASED.");
+                        System.err.println(e.getMessage());
                     } catch (Exception e) {
-                        System.err.println("Eroare: " + e.getMessage());
+                        System.err.println("Error: " + e.getMessage());
                     }
                 }
                 case 2 -> transactionController.listAllTransactions();
                 case 3 -> {
-                    String transactionTypeInput = MenuHandler.readText("Tip Tranzacție (SOLD/LEASED): ").toUpperCase();
+                    String transactionTypeInput = MenuHandler.readText("Transaction Type (SOLD/LEASED): ").toUpperCase();
                     try {
                         TransactionType transactionType = TransactionType.valueOf(transactionTypeInput);
                         transactionController.listTransactionsByType(transactionType);
                     } catch (IllegalArgumentException e) {
-                        System.err.println("Tip de tranzacție invalid! Te rog să introduci SOLD sau LEASED.");
+                        System.err.println("Invalid Transaction Type! Please choose SOLD or LEASED.");
                     }
                 }
                 case 0 -> {
-                    System.out.println("Revenire la meniul principal...");
-                    inCarMenu = false;
+                    System.out.println("Returning to main menu...");
+                    inTransactionMenu = false;
                 }
-                default -> System.out.println("Opțiune invalidă!");
+                default -> System.out.println("Invalid option!");
             }
         }
     }
+
+
 }

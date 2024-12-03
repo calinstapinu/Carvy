@@ -19,7 +19,7 @@ public class LeasingService {
     /**
      * Constructs a new {@code LeasingService} with the specified repository and manager.
      *
-     * @param leasingRepository the repository to manage leasing data
+     * @param leasingRepository the repository to manage leasing repository.data
      * @param leasingManager    the manager responsible for leasing calculations
      */
     public LeasingService(LeasingRepository leasingRepository, LeasingManager leasingManager, LeasingManagerImpl leasingManagerImpl) {

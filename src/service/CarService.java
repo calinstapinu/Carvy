@@ -34,6 +34,14 @@ public class CarService {
         return carRepository.findAvailableCars();
     }
 
+    public List<Car> getSoldCars() {
+        return carRepository.findSoldCars();
+    }
+
+    public List<Car> getLeasedCars() {
+        return carRepository.findLeasedCars();
+    }
+
     /**
      * Marks a car as sold by updating its status to {@link CarStatus#SOLD}.
      *
@@ -88,4 +96,18 @@ public class CarService {
                         car.getBrand().toLowerCase().contains(name.toLowerCase()))
                 .collect(Collectors.toList());
     }
+
+    public List<Car> getCarsNewerThan(int year) {
+        return carRepository.readAll().stream()
+                .filter(car -> car.getYear() > year)
+                .collect(Collectors.toList());
+    }
+
+    public List<Car> getCarsWithinBudget(float maxBudget) {
+        return carRepository.readAll().stream() // Read all cars
+                .filter(car -> car.getPrice() <= maxBudget) // Filter cars within the budget
+                .collect(Collectors.toList());
+    }
+
+
 }

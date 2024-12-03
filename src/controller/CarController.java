@@ -45,6 +45,18 @@ public class CarController {
         cars.forEach(System.out::println);
     }
 
+    public void listSoldCars() {
+        List<Car> cars = carService.getSoldCars();
+        System.out.println("The list of sold cars:");
+        cars.forEach(System.out::println);
+    }
+
+    public void listLeasedCars() {
+        List<Car> cars = carService.getLeasedCars();
+        System.out.println("The list of leased cars:");
+        cars.forEach(System.out::println);
+    }
+
 
     public void markCarAsSold(long carId) {
         try {
@@ -70,6 +82,22 @@ public class CarController {
 
     public List<Car> findCarsByName(String name) {
         return carService.findCarsByName(name); // Implement in `CarService`
+    }
+
+    public void listCarsNewerThan(int year) {
+        List<Car> cars = carService.getCarsNewerThan(year);
+        if (cars.isEmpty()) {
+            System.out.println("No cars found newer than year " + year);
+        } else {
+            System.out.println("Cars newer than " + year + ":");
+            cars.forEach(System.out::println);
+        }
+    }
+
+    public void listCarsWithinBudget(float maxBudget) {
+        List<Car> cars = carService.getCarsWithinBudget(maxBudget); // Call the service
+        System.out.println("Cars within your budget:");
+        cars.forEach(System.out::println);
     }
 
 }

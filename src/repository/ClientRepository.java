@@ -1,13 +1,18 @@
 package repository;
 
 import model.Client;
+import repository.parsers.ClientParser;
+
+import java.io.File;
 
 /**
  * Repository for managing {@link Client} entities.
  * Provides additional methods specific to client operations.
  */
-public class ClientRepository extends InMemoryRepository<Client> {
-
+public class ClientRepository extends FileRepository<Client> {
+    public ClientRepository(File file, ClientParser parser) {
+        super(file, parser);
+    }
     /**
      * Finds a client by their full name.
      *

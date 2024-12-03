@@ -18,8 +18,8 @@ public class EmployeeController {
         this.employeeService = employeeService;
     }
 
-    public void addEmployee(String firstName, String lastName, String cnp, String role) {
-        Employee employee = new Employee(firstName, lastName, cnp, 0, role);
+    public void addEmployee(String firstName, String lastName, String cnp, Long employeeId, String role) {
+        Employee employee = new Employee(firstName, lastName, cnp, employeeId, role);
         employeeService.addEmployee(employee);
         System.out.println("Employee added successfully.");
     }
