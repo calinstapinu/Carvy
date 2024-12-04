@@ -33,18 +33,28 @@ public class CarController {
         System.out.println("The Car was added successfully.");
     }
 
+    /**
+     * Lists all cars in the system.
+     */
     public void listAllCars() {
         List<Car> cars = carService.getAllCars();
         System.out.println("The list of all cars:");
         cars.forEach(System.out::println);
     }
 
+    /**
+     * Lists all cars currently available for sale or lease.
+     */
     public void listAvailableCars() {
         List<Car> cars = carService.getAvailableCars();
         System.out.println("The list of available cars:");
         cars.forEach(System.out::println);
     }
 
+
+    /**
+     * Lists all cars that have been sold.
+     */
     public void listSoldCars() {
         List<Car> cars = carService.getSoldCars();
         System.out.println("The list of sold cars:");
@@ -57,7 +67,11 @@ public class CarController {
         cars.forEach(System.out::println);
     }
 
-
+    /**
+     * Marks a car with the specified ID as sold.
+     *
+     * @param carId the ID of the car to mark as sold
+     */
     public void markCarAsSold(long carId) {
         try {
             carService.markCarAsSold(carId);
@@ -67,6 +81,11 @@ public class CarController {
         }
     }
 
+    /**
+     * Marks a car with the specified ID as leased.
+     *
+     * @param carId the ID of the car to mark as leased
+     */
     public void markCarAsLeased(long carId) {
         try {
             carService.markCarAsLeased(carId);
@@ -76,14 +95,31 @@ public class CarController {
         }
     }
 
+    /**
+     * Finds and returns a car by its unique ID.
+     *
+     * @param carId the ID of the car to find
+     * @return the car with the specified ID, or {@code null} if not found
+     */
     public Car findCarById(long carId) {
         return carService.findCarById(carId);
     }
 
+    /**
+     * Finds and returns a list of cars matching the specified name (brand or model).
+     *
+     * @param name the name to search for (brand or model)
+     * @return a list of cars matching the specified name
+     */
     public List<Car> findCarsByName(String name) {
-        return carService.findCarsByName(name); // Implement in `CarService`
+        return carService.findCarsByName(name);
     }
 
+    /**
+     * Lists all cars newer than the specified year.
+     *
+     * @param year the year to filter cars
+     */
     public void listCarsNewerThan(int year) {
         List<Car> cars = carService.getCarsNewerThan(year);
         if (cars.isEmpty()) {
@@ -94,10 +130,34 @@ public class CarController {
         }
     }
 
+    /**
+     * Lists all cars within the specified budget.
+     *
+     * @param maxBudget the maximum budget for filtering cars
+     */
     public void listCarsWithinBudget(float maxBudget) {
-        List<Car> cars = carService.getCarsWithinBudget(maxBudget); // Call the service
+        List<Car> cars = carService.getCarsWithinBudget(maxBudget);
         System.out.println("Cars within your budget:");
         cars.forEach(System.out::println);
+    }
+
+    /**
+     * Lists all cars sorted by their year of manufacture in ascending order.
+     */
+    public void listCarsSortedByYear() {
+        List<Car> sortedCars = carService.getCarsSortedByYearAscending();
+        System.out.println("Cars sorted by Year (Ascending):");
+        sortedCars.forEach(System.out::println);
+    }
+
+
+    /**
+     * Lists all cars sorted by their price in ascending order.
+     */
+    public void listCarsSortedByPrice() {
+        List<Car> sortedCars = carService.getCarsSortedByPriceAscending();
+        System.out.println("Cars sorted by Price (Ascending):");
+        sortedCars.forEach(System.out::println);
     }
 
 }

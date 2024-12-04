@@ -47,6 +47,11 @@ public class FileRepository<T> implements IRepository<T> {
         }
     }
 
+    /**
+     * Adds a new entity to the repository.
+     *
+     * @param entity the entity to create
+     */
     @Override
     public void create(T entity) {
         try (FileWriter writer = new FileWriter(file, true)) {
@@ -56,6 +61,12 @@ public class FileRepository<T> implements IRepository<T> {
         }
     }
 
+    /**
+     * Reads an entity with the specified ID from the repository.
+     *
+     * @param id the ID of the entity to read
+     * @return the entity with the specified ID, or {@code null} if not found
+     */
     @Override
     public T read(long id) {
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
@@ -69,6 +80,11 @@ public class FileRepository<T> implements IRepository<T> {
         }
     }
 
+    /**
+     * Reads all entities from the repository.
+     *
+     * @return a list of all entities in the repository
+     */
     @Override
     public List<T> readAll() {
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
@@ -80,9 +96,12 @@ public class FileRepository<T> implements IRepository<T> {
         }
     }
 
-
-
-
+    /**
+     * Updates an existing entity in the repository.
+     * If the entity does not exist, no changes are made.
+     *
+     * @param entity the updated entity
+     */
     @Override
     public void update(T entity) {
         List<T> allEntities = readAll();
@@ -99,6 +118,12 @@ public class FileRepository<T> implements IRepository<T> {
         }
     }
 
+    /**
+     * Deletes an entity with the specified ID from the repository.
+     * If the entity does not exist, no changes are made.
+     *
+     * @param id the ID of the entity to delete
+     */
     @Override
     public void delete(long id) {
         List<T> allEntities = readAll();

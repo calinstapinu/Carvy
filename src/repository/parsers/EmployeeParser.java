@@ -7,6 +7,12 @@ import model.Employee;
  */
 public class EmployeeParser implements EntityParser<Employee> {
 
+    /**
+     * Converts an {@link Employee} object into a CSV string representation.
+     *
+     * @param employee the {@link Employee} object to convert
+     * @return a CSV string representation of the employee
+     */
     @Override
     public String toCSV(Employee employee) {
         return employee.getId() + "," +
@@ -16,6 +22,11 @@ public class EmployeeParser implements EntityParser<Employee> {
                 employee.getRole();
     }
 
+    /**
+     * Parses a CSV string to create an {@link Employee} object.
+     *
+     * @param csv the CSV string representing an employee
+     */
     @Override
     public Employee fromCSV(String csv) {
         String[] fields = csv.split(",");

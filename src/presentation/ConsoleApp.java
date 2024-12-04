@@ -223,13 +223,17 @@ public class ConsoleApp {
             int choice = MenuHandler.showMenu("Cars by Sorting", new String[]{
                     "List Available Cars",
                     "List Sold Cars",
-                    "List Leased Cars"
+                    "List Leased Cars",
+                    "Sort Cars by Year",
+                    "Sort Cars by Price"
             });
 
             switch (choice) {
                 case 1 -> carController.listAvailableCars();
                 case 2 -> carController.listSoldCars();
                 case 3 -> carController.listLeasedCars();
+                case 4 -> carController.listCarsSortedByYear();
+                case 5 -> carController.listCarsSortedByPrice();
                 case 0 -> {
                     System.out.println("Returning to the car menu...");
                     inSortingMenu = false;

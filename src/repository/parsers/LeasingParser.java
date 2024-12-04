@@ -12,12 +12,23 @@ public class LeasingParser implements EntityParser<Leasing> {
     private final EntityParser<Client> clientParser;
 
 
-
+    /**
+     * Constructs a new {@link LeasingParser} with the specified parsers for {@link Car} and {@link Client}.
+     *
+     * @param carParser    the parser for {@link Car} objects
+     * @param clientParser the parser for {@link Client} objects
+     */
     public LeasingParser(EntityParser<Car> carParser, EntityParser<Client> clientParser) {
         this.carParser = carParser;
         this.clientParser = clientParser;
     }
 
+    /**
+     * Converts a {@link Leasing} object into a CSV string representation.
+     *
+     * @param leasing the {@link Leasing} object to convert
+     * @return a CSV string representation of the leasing
+     */
     @Override
     public String toCSV(Leasing leasing) {
         return leasing.getId() + "," +
@@ -29,6 +40,12 @@ public class LeasingParser implements EntityParser<Leasing> {
                 leasing.getTotalAmount();
     }
 
+    /**
+     * Parses a CSV string to create a {@link Leasing} object.
+     *
+     * @param csv the CSV string representing a leasing
+     * @return a {@link Leasing} object created from the CSV string
+     */
     @Override
     public Leasing fromCSV(String csv) {
         String[] fields = csv.split(",", 5); // Adjust the delimiter and expected count
