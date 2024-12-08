@@ -2,7 +2,7 @@ package org.dealership.model;
 
 import org.dealership.model.enums.CarStatus;
 
-public class Car {
+public class Car implements HasID{
     private long carId;
     private String brand;
     private String model;
@@ -10,6 +10,10 @@ public class Car {
     private float price;
     private int mileage;
     private CarStatus status;
+
+    // No-argument constructor
+    public Car() {
+    }
 
     public Car(long carId, String brand, String model, int year, float price, int mileage, CarStatus status) {
         this.carId = carId;

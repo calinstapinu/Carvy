@@ -3,11 +3,15 @@ package org.dealership.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Client extends Person {
+public class Client extends Person implements HasID{
     private long clientId;
     private List<Car> purchasedCars = new ArrayList<>();
     private List<Leasing> leasedCars = new ArrayList<>();
 
+    public Client() {
+        super();
+
+    }
     public Client(String firstName, String lastName, String CNP, long clientId) {
         super(firstName, lastName, CNP);
         this.clientId = clientId;

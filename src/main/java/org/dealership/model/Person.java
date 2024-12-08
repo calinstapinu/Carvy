@@ -5,6 +5,9 @@ public abstract class Person {
     private String lastName;
     private String CNP; // Unique identifier (e.g., Social Security Number)
 
+    public Person(){
+
+    }
     public Person(String firstName, String lastName, String CNP) {
         this.firstName = firstName;
         this.lastName = lastName;

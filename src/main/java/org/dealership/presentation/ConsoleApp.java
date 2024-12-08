@@ -457,7 +457,7 @@ public class ConsoleApp {
                         Client client = clientService.findClientById(clientId); // Use Client ID to find the client
 
                         // Create and add the transaction
-                        Transaction transaction = new Transaction(transactionId, car, client, transactionType, new java.util.Date());
+                        Transaction transaction = new Transaction(transactionId, carId, clientId, transactionType, new java.util.Date());
                         transactionController.addTransaction(transaction);
                         System.out.println("Transaction added successfully.");
                     } catch (IllegalArgumentException e) {

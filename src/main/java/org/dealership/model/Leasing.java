@@ -1,20 +1,26 @@
 package org.dealership.model;
 
+import java.io.Serializable;
+
 /**
  * Represents a leasing contract for a car.
  * Contains details about the car, client, leasing duration, interest rate, monthly rate, and total amount.
  */
 
-public class Leasing {
+public class Leasing implements HasID{
     private long leasingId;
     private Car car;
     private Client client;
+    private long carId;
+    private long clientId;
     private int durationMonths;
     private float monthlyRate;
     private float interestRate;
     private float totalAmount;
 
-
+    // Default constructor
+    public Leasing() {
+    }
     /**
      * Constructs a new {@link Leasing} object.
      *
@@ -32,6 +38,17 @@ public class Leasing {
         this.interestRate = interestRate;
         this.monthlyRate = calculateMonthlyRate();
         this.totalAmount = calculateTotalAmount();
+    }
+
+    // Constructor with carId and clientId
+    public Leasing(Long leasingId, Long carId, Long clientId, int durationMonths, float interestRate) {
+        this.leasingId = leasingId;
+        this.carId = carId;
+        this.clientId = clientId;
+        this.durationMonths = durationMonths;
+        this.interestRate = interestRate;
+        this.monthlyRate = 0;
+        this.totalAmount = 0;
     }
 
     public long getId() {
@@ -56,6 +73,22 @@ public class Leasing {
 
     public void setClient(Client client) {
         this.client = client;
+    }
+
+    public Long getCarId() {
+        return carId;
+    }
+
+    public void setCarId(Long carId) {
+        this.carId = carId;
+    }
+
+    public Long getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(Long clientId) {
+        this.clientId = clientId;
     }
 
     public int getDurationMonths() {
@@ -91,7 +124,10 @@ public class Leasing {
     }
 
     private float calculateMonthlyRate() {
-        return (car.getPrice() * (1 + interestRate)) / durationMonths;
+        if (car != null) {
+            return (car.getPrice() * (1 + interestRate)) / durationMonths;
+        }
+        throw new IllegalStateException("Car is not initialized for calculating monthly rate");
     }
 
     private float calculateTotalAmount() {

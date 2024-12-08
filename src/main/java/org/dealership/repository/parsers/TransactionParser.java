@@ -25,8 +25,8 @@ public class TransactionParser implements EntityParser<Transaction> {
     @Override
     public String toCSV(Transaction transaction) {
         return transaction.getId() + "," +
-                carParser.toCSV(transaction.getCar()) + "," +
-                clientParser.toCSV(transaction.getClient()) + "," +
+                transaction.getCar() + "," +
+                transaction.getClient() + "," +
                 transaction.getTransactionType() + "," +
                 DATE_FORMAT.format(transaction.getTransactionDate());
     }
@@ -40,8 +40,8 @@ public class TransactionParser implements EntityParser<Transaction> {
             Date date = DATE_FORMAT.parse(fields[4]);
             return new Transaction(
                     Long.parseLong(fields[0]),
-                    car,
-                    client,
+                    Long.parseLong(fields[1]),
+                    Long.parseLong(fields[2]),
                     TransactionType.valueOf(fields[3]),
                     date
             );

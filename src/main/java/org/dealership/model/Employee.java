@@ -3,10 +3,14 @@ package org.dealership.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Employee extends Person {
+public class Employee extends Person implements HasID {
     private long employeeId;
     private String role; // Example: Manager, Salesperson, etc.
     private List<Car> managedCars = new ArrayList<>();
+
+    public Employee() {
+        super();
+    }
 
     public Employee(String firstName, String lastName, String CNP, long employeeId, String role) {
         super(firstName, lastName, CNP);

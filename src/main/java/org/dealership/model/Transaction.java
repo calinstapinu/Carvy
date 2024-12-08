@@ -4,17 +4,21 @@ import org.dealership.model.enums.TransactionType;
 
 import java.util.Date;
 
-public class Transaction {
+public class Transaction implements HasID{
     private long transactionId;
-    private Car car;
-    private Client client;
+    private long carId;
+    private long clientId;
     private TransactionType transactionType; // Sold or Leased
     private Date transactionDate;
 
-    public Transaction(long transactionId, Car car, Client client, TransactionType transactionType, Date transactionDate) {
+    // Default constructor
+    public Transaction() {
+    }
+
+    public Transaction(long transactionId, Long carId, Long clientId, TransactionType transactionType, Date transactionDate) {
         this.transactionId = transactionId;
-        this.car = car;
-        this.client = client;
+        this.carId = carId;
+        this.clientId = clientId;
         this.transactionType = transactionType;
         this.transactionDate = transactionDate;
     }
@@ -27,20 +31,20 @@ public class Transaction {
         this.transactionId = transactionId;
     }
 
-    public Car getCar() {
-        return car;
+    public long getCar() {
+        return carId;
     }
 
-    public void setCar(Car car) {
-        this.car = car;
+    public void setCar(long car) {
+        this.carId = car;
     }
 
-    public Client getClient() {
-        return client;
+    public long getClient() {
+        return clientId;
     }
 
-    public void setClient(Client client) {
-        this.client = client;
+    public void setClient(long client) {
+        this.clientId = client;
     }
 
     public TransactionType getTransactionType() {
@@ -63,8 +67,8 @@ public class Transaction {
     public String toString() {
         return "Transaction{" +
                 "transactionId=" + transactionId +
-                ", car=" + car +
-                ", client=" + client +
+                ", car=" + carId +
+                ", client=" + clientId +
                 ", transactionType=" + transactionType +
                 ", transactionDate=" + transactionDate +
                 '}';
