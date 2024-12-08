@@ -221,19 +221,14 @@ public class ConsoleApp {
         boolean inSortingMenu = true;
         while (inSortingMenu) {
             int choice = MenuHandler.showMenu("Cars by Sorting", new String[]{
-                    "List Available Cars",
-                    "List Sold Cars",
-                    "List Leased Cars",
                     "Sort Cars by Year",
                     "Sort Cars by Price"
             });
 
             switch (choice) {
-                case 1 -> carController.listAvailableCars();
-                case 2 -> carController.listSoldCars();
-                case 3 -> carController.listLeasedCars();
-                case 4 -> carController.listCarsSortedByYear();
-                case 5 -> carController.listCarsSortedByPrice();
+
+                case 1 -> carController.listCarsSortedByYear();
+                case 2 -> carController.listCarsSortedByPrice();
                 case 0 -> {
                     System.out.println("Returning to the car menu...");
                     inSortingMenu = false;
@@ -247,16 +242,22 @@ public class ConsoleApp {
         boolean inFilteringMenu = true;
         while (inFilteringMenu) {
             int choice = MenuHandler.showMenu("Cars by Filtering", new String[]{
+                    "List Available Cars",
+                    "List Sold Cars",
+                    "List Leased Cars",
                     "Filter by Year",
                     "Filter by Budget"
             });
 
             switch (choice) {
-                case 1 -> {
+                case 1 -> carController.listAvailableCars();
+                case 2 -> carController.listSoldCars();
+                case 3 -> carController.listLeasedCars();
+                case 4 -> {
                     int year = MenuHandler.readInt("Cars newer than: ");
                     carController.listCarsNewerThan(year);
                 }
-                case 2 -> {
+                case 5 -> {
                     int maxBudget = MenuHandler.readInt("Your Maximum Budget: ");
                     carController.listCarsWithinBudget(maxBudget);
                 }
