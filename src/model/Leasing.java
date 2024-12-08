@@ -1,5 +1,10 @@
 package model;
 
+/**
+ * Represents a leasing contract for a car.
+ * Contains details about the car, client, leasing duration, interest rate, monthly rate, and total amount.
+ */
+
 public class Leasing {
     private long leasingId;
     private Car car;
@@ -9,6 +14,16 @@ public class Leasing {
     private float interestRate;
     private float totalAmount;
 
+
+    /**
+     * Constructs a new {@link Leasing} object.
+     *
+     * @param leasingId
+     * @param car
+     * @param client
+     * @param durationMonths
+     * @param interestRate
+     */
     public Leasing(long leasingId, Car car, Client client, int durationMonths, float interestRate) {
         this.leasingId = leasingId;
         this.car = car;

@@ -14,7 +14,7 @@
 1. ***Managing Client and Employee Information***:
    
    • The application allows **adding, modifying,** and **viewing** information about clients and employees.
-   In the data structure, the abstract class **Person** serves as a base for the classes **Client** and **Employee**,
+   In the repository.data structure, the abstract class **Person** serves as a base for the classes **Client** and **Employee**,
    which contain specific attributes and methods for each category.
    
    • This setup facilitates **efficient management** of information related to the people involved in the
