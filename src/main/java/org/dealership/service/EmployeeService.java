@@ -1,7 +1,9 @@
 package org.dealership.service;
 
 import org.dealership.model.Car;
+import org.dealership.model.Client;
 import org.dealership.model.Employee;
+import org.dealership.repository.DBRepository;
 import org.dealership.repository.entityRepos.EmployeeRepository;
 
 import java.util.List;
@@ -13,9 +15,11 @@ import java.util.List;
  */
 public class EmployeeService {
     private final EmployeeRepository employeeRepository;
+    private final DBRepository<Employee> dbEmployeeRepo;
 
-    public EmployeeService(EmployeeRepository employeeRepository) {
+    public EmployeeService(EmployeeRepository employeeRepository, DBRepository<Employee> dbEmployeeRepo) {
         this.employeeRepository = employeeRepository;
+        this.dbEmployeeRepo = dbEmployeeRepo;
     }
 
     public void addEmployee(Employee employee) {

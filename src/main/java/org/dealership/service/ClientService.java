@@ -1,6 +1,7 @@
 package org.dealership.service;
 
 import org.dealership.model.Client;
+import org.dealership.repository.DBRepository;
 import org.dealership.repository.entityRepos.ClientRepository;
 
 import java.util.List;
@@ -12,9 +13,11 @@ import java.util.List;
  */
 public class ClientService {
     private final ClientRepository clientRepository;
+    private final DBRepository<Client> dbClientRepo;
 
-    public ClientService(ClientRepository clientRepository) {
+    public ClientService(ClientRepository clientRepository, DBRepository<Client> dbClientRepo) {
         this.clientRepository = clientRepository;
+        this.dbClientRepo = dbClientRepo;
     }
 
     public void addClient(Client client) {
@@ -61,4 +64,5 @@ public class ClientService {
         Client client = findClientById(clientId);
         clientRepository.delete(client.getId());
     }
+
 }

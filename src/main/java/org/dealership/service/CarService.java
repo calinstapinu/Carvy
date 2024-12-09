@@ -2,6 +2,7 @@ package org.dealership.service;
 
 import org.dealership.model.Car;
 import org.dealership.model.enums.CarStatus;
+import org.dealership.repository.DBRepository;
 import org.dealership.repository.entityRepos.CarRepository;
 
 import java.util.List;
@@ -14,11 +15,12 @@ import java.util.stream.Collectors;
  */
 public class CarService {
     private final CarRepository carRepository;
+    private final DBRepository<Car> dbCarRepository;
 
-    public CarService(CarRepository carRepository) {
+    public CarService(CarRepository carRepository, DBRepository<Car> dbCarRepository) {
         this.carRepository = carRepository;
+        this.dbCarRepository = dbCarRepository;
     }
-
 
     public void addCar(Car car) {
         carRepository.create(car);
@@ -148,5 +150,12 @@ public class CarService {
         return cars;
     }
 
+    public void deleteCarFromDB(long carId) {
+        dbCarRepository.delete(carId);
+    }
 
+
+    public void deleteCar(long carId) {
+        carRepository.delete(carId);
+    }
 }

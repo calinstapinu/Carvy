@@ -51,6 +51,16 @@ public class Leasing implements HasID{
         this.totalAmount = 0;
     }
 
+    public Leasing(long leasingId, Car car, Client client, int durationMonths, float monthlyRate, float interestRate, float totalAmount) {
+        this.leasingId = leasingId;
+        this.car = car;
+        this.client = client;
+        this.durationMonths = durationMonths;
+        this.monthlyRate = monthlyRate;
+        this.interestRate = interestRate;
+        this.totalAmount = totalAmount;
+    }
+
     public long getId() {
         return leasingId;
     }

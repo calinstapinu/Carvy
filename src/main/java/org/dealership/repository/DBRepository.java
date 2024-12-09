@@ -33,7 +33,6 @@ public class DBRepository<T extends HasID> implements IRepository<T> {
         String sql = null;
         try {
             sql = generateInsertSQL(obj);
-            System.out.println("Executing SQL: " + sql);
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Error generating SQL", e);
@@ -54,7 +53,6 @@ public class DBRepository<T extends HasID> implements IRepository<T> {
     @Override
     public T read(long id) {
         String sql = "SELECT * FROM " + getTableName() + " WHERE " + getPrimaryKeyColumn() + " = ?";
-        System.out.println("Executing SQL: " + sql + " with ID: " + id);
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -62,7 +60,6 @@ public class DBRepository<T extends HasID> implements IRepository<T> {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 T obj = mapResultSetToObject(rs);
-                System.out.println("Object fetched from DB: " + obj);
                 return obj;
             } else {
                 System.out.println("No record found for ID: " + id);
@@ -294,17 +291,17 @@ public class DBRepository<T extends HasID> implements IRepository<T> {
 
                     // Skip fields that are collections (e.g., List, Set)
                     if (Collection.class.isAssignableFrom(field.getType())) {
-                        System.out.println("Skipping collection field: " + field.getName());
+//                        System.out.println("Skipping collection field: " + field.getName());
                         continue;
                     }
 
                     Object value = null;
-                    System.out.println("Mapping field: " + field.getName() + " -> column: " + columnName + " -> value: " + value);
+                    //System.out.println("Mapping field: " + field.getName() + " -> column: " + columnName + " -> value: " + value);
                     try {
                         value = rs.getObject(columnName);
                     } catch (SQLException e) {
                         // If the column doesn't exist in the ResultSet, skip setting this field
-                        System.out.println("Column not found: " + columnName + ", skipping.");
+                        //System.out.println("Column not found: " + columnName + ", skipping.");
                         continue;
                     }
 

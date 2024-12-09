@@ -1,9 +1,7 @@
 package org.dealership.presentation;
 
 import org.dealership.controller.*;
-import org.dealership.model.Car;
-import org.dealership.model.Client;
-import org.dealership.model.Transaction;
+import org.dealership.model.*;
 import org.dealership.model.enums.TransactionType;
 import org.dealership.repository.entityRepos.*;
 import org.dealership.service.CarService;
@@ -16,6 +14,7 @@ import org.dealership.repository.parsers.ClientParser;
 import org.dealership.repository.parsers.EmployeeParser;
 import org.dealership.repository.parsers.LeasingParser;
 import org.dealership.repository.parsers.TransactionParser;
+import org.dealership.repository.DBRepository;
 
 import java.io.File;
 import java.util.List;
@@ -35,11 +34,55 @@ public class ConsoleApp {
         File transactionFile = new File("data/transactions.txt");
 
 // Initialize repositories with specific types and parsers
-        CarRepository carRepo = new CarRepository(carFile, new CarParser());
-        ClientRepository clientRepo = new ClientRepository(clientFile, new ClientParser());
-        EmployeeRepository empRepo = new EmployeeRepository(employeeFile, new EmployeeParser());
-        LeasingRepository leasingRepo = new LeasingRepository(leasingFile, new LeasingParser(new CarParser(), new ClientParser()));
-        TransactionRepository transactionRepo = new TransactionRepository(transactionFile, new TransactionParser(new CarParser(), new ClientParser()));
+//        CarRepository carRepo = new CarRepository(carFile, new CarParser());
+//        DBRepository<Car> dbCarRepo = new DBRepository<>(Car.class, "cars");
+//        ClientRepository clientRepo = new ClientRepository(clientFile, new ClientParser());
+//        EmployeeRepository empRepo = new EmployeeRepository(employeeFile, new EmployeeParser());
+//        LeasingRepository leasingRepo = new LeasingRepository(leasingFile, new LeasingParser(new CarParser(), new ClientParser()));
+//        TransactionRepository transactionRepo = new TransactionRepository(transactionFile, new TransactionParser(new CarParser(), new ClientParser()));
+
+        // Repository selection menu
+        System.out.println("Select the repository to use:");
+        int repoChoice = MenuHandler.showMenu("Repository Selection", new String[]{
+                "File-Based Repository",
+                "Database Repository"
+        });
+
+        // Initialize repositories based on choice
+        CarRepository carRepo = null;
+        DBRepository<Car> dbCarRepo = null;
+
+        ClientRepository clientRepo = null;
+        DBRepository<Client> dbClientRepo = null;
+
+        EmployeeRepository empRepo = null;
+        DBRepository<Employee> dbEmployeeRepo = null;
+
+        LeasingRepository leasingRepo = null;
+        DBRepository<Leasing> dbLeasingRepo = null;
+
+        TransactionRepository transactionRepo = null;
+        DBRepository<Transaction> dbTransactionRepo = null;
+
+        boolean useDatabase = (repoChoice == 2);
+
+        if (repoChoice == 1) {
+            System.out.println("Using File-Based Repository.");
+
+            carRepo = new CarRepository(carFile, new CarParser());
+            clientRepo = new ClientRepository(clientFile, new ClientParser());
+            empRepo = new EmployeeRepository(employeeFile, new EmployeeParser());
+            leasingRepo = new LeasingRepository(leasingFile, new LeasingParser(new CarParser(), new ClientParser()));
+            transactionRepo = new TransactionRepository(transactionFile, new TransactionParser(new CarParser(), new ClientParser()));
+        } else {
+            System.out.println("Using Database Repository.");
+
+            dbCarRepo = new DBRepository<>(Car.class, "cars");
+            dbClientRepo = new DBRepository<>(Client.class, "clients");
+            dbEmployeeRepo = new DBRepository<>(Employee.class, "employees");
+            dbLeasingRepo = new DBRepository<>(Leasing.class, "leasings");
+            dbTransactionRepo = new DBRepository<>(Transaction.class, "transactions");
+        }
 
 
         // Initialize leasing manager
@@ -47,19 +90,19 @@ public class ConsoleApp {
         LeasingManagerImpl leasingManagerImpl = new LeasingManagerImpl();
 
         // Initialize services
-        CarService carService = new CarService(carRepo);
-        ClientService clientService = new ClientService(clientRepo);
-        EmployeeService employeeService = new EmployeeService(empRepo);
-        LeasingService leasingService = new LeasingService(leasingRepo, leasingManager, leasingManagerImpl);
-        TransactionService transactionService = new TransactionService(transactionRepo);
+        CarService carService = new CarService(carRepo, dbCarRepo);
+        ClientService clientService = new ClientService(clientRepo, dbClientRepo);
+        EmployeeService employeeService = new EmployeeService(empRepo, dbEmployeeRepo);
+        LeasingService leasingService = new LeasingService(leasingRepo, leasingManager, leasingManagerImpl, dbLeasingRepo);
+        TransactionService transactionService = new TransactionService(transactionRepo, dbTransactionRepo);
 
 
         // Initialize controllers
-        CarController carController = new CarController(carService);
-        ClientController clientController = new ClientController(clientService);
-        EmployeeController employeeController = new EmployeeController(employeeService);
-        LeasingController leasingController = new LeasingController(leasingService);
-        TransactionController transactionController = new TransactionController(transactionService);
+        CarController carController = new CarController(carService, dbCarRepo);
+        ClientController clientController = new ClientController(clientService, dbClientRepo);
+        EmployeeController employeeController = new EmployeeController(employeeService, dbEmployeeRepo);
+        LeasingController leasingController = new LeasingController(leasingService, dbLeasingRepo);
+        TransactionController transactionController = new TransactionController(transactionService, dbTransactionRepo);
 
         boolean appRunning = true;
         while (appRunning) {
@@ -70,7 +113,7 @@ public class ConsoleApp {
 
             switch (userType) {
                 case 1 ->
-                        adminMenu(carController, clientController, employeeController, leasingController, transactionController, carService, clientService);
+                        adminMenu(carController, clientController, employeeController, leasingController, transactionController, carService, clientService, useDatabase);
                 case 2 -> clientMenu(carController, leasingController, clientService, leasingService);
                 case 3 -> {
                     System.out.println("Exiting the application...");
@@ -87,7 +130,8 @@ public class ConsoleApp {
             LeasingController leasingController,
             TransactionController transactionController,
             CarService carService,
-            ClientService clientService
+            ClientService clientService,
+            boolean useDatabase
     ) {
         boolean running = true;
         while (running) {
@@ -100,11 +144,11 @@ public class ConsoleApp {
             });
 
             switch (choice) {
-                case 1 -> carMenu(carController);
-                case 2 -> clientMenu(clientController);
-                case 3 -> employeeMenu(employeeController, carService);
-                case 4 -> leasingMenu(leasingController, carService, clientService);
-                case 5 -> transactionMenu(transactionController, carService, clientService);
+                case 1 -> carMenu(carController, useDatabase);
+                case 2 -> clientMenu(clientController, useDatabase);
+                case 3 -> employeeMenu(employeeController, carService, useDatabase);
+                case 4 -> leasingMenu(leasingController, carService, clientService, useDatabase);
+                case 5 -> transactionMenu(transactionController, carService, clientService, useDatabase);
                 case 0 -> {
                     System.out.println("Exiting...");
                     running = false;
@@ -175,16 +219,17 @@ public class ConsoleApp {
 
 
 
-    private static void carMenu(CarController carController) {
+    private static void carMenu(CarController carController, boolean useDatabase) {
         boolean inCarMenu = true;
         while (inCarMenu) {
             int choice = MenuHandler.showMenu("Manage Cars", new String[]{
                     "Add Car",
                     "List All Cars",
+                    "Delete Car",
                     "Cars by Sorting",
                     "Cars by Filtering",
                     "Mark Car as SOLD",
-                    "Mark Car as LEASED"
+                    "Mark Car as LEASED",
             });
 
             switch (choice) {
@@ -195,16 +240,35 @@ public class ConsoleApp {
                     int year = MenuHandler.readInt("Year of Manufacture: ");
                     float price = MenuHandler.readFloat("Price: ");
                     int mileage = MenuHandler.readInt("Mileage: ");
-                    carController.addCar(carId, brand, model, year, price, mileage);
+                    String status = MenuHandler.readText("Status (AVAILABLE, LEASED, SOLD): ");
+                    if (useDatabase) {
+                        carController.addCarToDB(carId, brand, model, year, price, mileage, status);
+                    } else {
+                        carController.addCar(carId, brand, model, year, price, mileage);
+                    }
                 }
-                case 2 -> carController.listAllCars();
-                case 3 -> carSortingMenu(carController); // Navigate to sorting submenu
-                case 4 -> carFilteringMenu(carController);
-                case 5 -> {
+                case 2 -> {
+                    if (useDatabase) {
+                        carController.listAllCarsFromDB();
+                    } else {
+                        carController.listAllCars();
+                    }
+                }
+                case 3 -> {
+                    long carId = MenuHandler.readLong("Car ID to delete: ");
+                    if (useDatabase) {
+                        carController.deleteCarFromDB(carId);
+                    } else {
+                        carController.deleteCar(carId);
+                    }
+                }
+                case 4 -> carSortingMenu(carController); // Navigate to sorting submenu
+                case 5 -> carFilteringMenu(carController);
+                case 6 -> {
                     long carId = MenuHandler.readInt("Car ID: ");
                     carController.markCarAsSold(carId);
                 }
-                case 6 -> {
+                case 7 -> {
                     long carId = MenuHandler.readInt("Car ID: ");
                     carController.markCarAsLeased(carId);
                 }
@@ -272,7 +336,7 @@ public class ConsoleApp {
 
 
 
-    private static void clientMenu(ClientController clientController) {
+    private static void clientMenu(ClientController clientController, boolean useDatabase) {
         boolean inClientMenu = true;
 
         while (inClientMenu) {
@@ -290,9 +354,19 @@ public class ConsoleApp {
                     String firstName = MenuHandler.readText("First Name: ");
                     String lastName = MenuHandler.readText("Last Name: ");
                     String cnp = MenuHandler.readText("CNP: ");
-                    clientController.addClient(firstName, lastName, cnp, clientId);
+                    if (useDatabase) {
+                        clientController.addClientToDB(firstName, lastName, cnp, clientId);
+                    } else {
+                        clientController.addClient(firstName, lastName, cnp, clientId);
+                    }
                 }
-                case 2 -> clientController.listAllClients();
+                case 2 -> {
+                    if (useDatabase) {
+                        clientController.listAllClientsFromDB();
+                    } else {
+                        clientController.listAllClients();
+                    }
+                }
                 case 3 -> {
                     long clientId = MenuHandler.readInt("Client ID: ");
                     clientController.findClientById(clientId);
@@ -302,8 +376,12 @@ public class ConsoleApp {
                     clientController.findClientByName(name);
                 }
                 case 5 -> {
-                    long clientId = MenuHandler.readInt("Client ID: ");
-                    clientController.deleteClient(clientId);
+                    long clientId = MenuHandler.readLong("Client ID to delete: ");
+                    if (useDatabase) {
+                        clientController.deleteClientFromDB(clientId);
+                    }else {
+                        clientController.deleteClient(clientId);
+                    }
                 }
                 case 0 -> {
                     System.out.println("Returning to the main menu...");
@@ -314,7 +392,7 @@ public class ConsoleApp {
         }
     }
 
-    private static void employeeMenu(EmployeeController employeeController, CarService carService) {
+    private static void employeeMenu(EmployeeController employeeController, CarService carService, boolean useDatabase) {
         boolean inEmployeeMenu = true;
 
         while (inEmployeeMenu) {
@@ -333,9 +411,19 @@ public class ConsoleApp {
                     String lastName = MenuHandler.readText("Last Name: ");
                     String cnp = MenuHandler.readText("CNP: ");
                     String role = MenuHandler.readText("Role (e.g., Salesperson, Manager): ");
-                    employeeController.addEmployee(firstName, lastName, cnp, employeeId, role);
+                    if (useDatabase) {
+                        employeeController.addEmployeeToDB(firstName, lastName, cnp, employeeId, role);
+                    } else {
+                        employeeController.addEmployee(firstName, lastName, cnp, employeeId, role);
+                    }
                 }
-                case 2 -> employeeController.listAllEmployees();
+                case 2 -> {
+                    if (useDatabase) {
+                        employeeController.listAllEmployeesFromDB();
+                    } else {
+                        employeeController.listAllEmployees();
+                    }
+                }
                 case 3 -> {
                     long employeeId = MenuHandler.readInt("Employee ID: ");
                     employeeController.findEmployeeById(employeeId);
@@ -354,7 +442,11 @@ public class ConsoleApp {
                 }
                 case 5 -> {
                     long employeeId = MenuHandler.readInt("Employee ID: ");
-                    employeeController.deleteEmployee(employeeId);
+                    if (useDatabase) {
+                        employeeController.deleteEmployeeFromDB(employeeId);
+                    }else {
+                        employeeController.deleteEmployee(employeeId);
+                    }
                 }
                 case 0 -> {
                     System.out.println("Returning to the main menu...");
@@ -365,12 +457,13 @@ public class ConsoleApp {
         }
     }
 
-    private static void leasingMenu(LeasingController leasingController, CarService carService, ClientService clientService) {
+    private static void leasingMenu(LeasingController leasingController, CarService carService, ClientService clientService, boolean useDatabase) {
         boolean inLeasingMenu = true;
 
         while (inLeasingMenu) {
             int choice = MenuHandler.showMenu("Manage Leasing Contracts", new String[]{
                     "Create Leasing Contract",
+                    "List All Leasing Contracts",
                     "Calculate Total Amount for Leasing Contract"
             });
 
@@ -385,12 +478,17 @@ public class ConsoleApp {
                         Client client = clientService.findClientById(clientId);
 
                         int durationMonths = MenuHandler.readInt("Contract Duration (months): ");
+                        int monthlyRate = MenuHandler.readInt("Contract Monthly Rate: ");
+                        int totalAmount = MenuHandler.readInt("Contract Total Amount: ");
                         float interestRate = MenuHandler.readFloat("Interest Rate: ");
                         float downPayment = MenuHandler.readFloat("Down Payment: ");
                         float adminFee = MenuHandler.readFloat("Administrative Fee: ");
                         float taxRate = MenuHandler.readFloat("Tax Rate (%): ");
-
-                        leasingController.createLeasing(leasingId, car, client, durationMonths, interestRate, downPayment, adminFee, taxRate);
+                        if (useDatabase) {
+                            leasingController.addLeasingToDB(leasingId, car, client, durationMonths, monthlyRate, interestRate, totalAmount);
+                        } else {
+                            leasingController.createLeasing(leasingId, car, client, durationMonths, interestRate, downPayment, adminFee, taxRate);
+                        }
 
                     } catch (IllegalArgumentException e) {
                         System.err.println("Error: " + e.getMessage());
@@ -411,6 +509,13 @@ public class ConsoleApp {
 //                    leasingController.findLeasingById(leasingId);
 //                }
                 case 2 -> {
+                    if (useDatabase) {
+                        leasingController.listAllLeasingsFromDB();
+                    } else {
+                        leasingController.listAllLeasings();
+                    }
+                }
+                case 3 -> {
                     long leasingId = MenuHandler.readLong("Leasing Contract ID: ");
                     float adminFee = MenuHandler.readFloat("Administrative Fee: ");
                     float taxRate = MenuHandler.readFloat("Tax Rate (%): ");
@@ -426,7 +531,7 @@ public class ConsoleApp {
         }
     }
 
-    private static void transactionMenu(TransactionController transactionController, CarService carService, ClientService clientService) {
+    private static void transactionMenu(TransactionController transactionController, CarService carService, ClientService clientService, boolean useDatabase) {
         boolean inTransactionMenu = true;
 
         while (inTransactionMenu) {
@@ -439,26 +544,38 @@ public class ConsoleApp {
             switch (choice) {
                 case 1 -> { // Adding a transaction
                     try {
+//                        long transactionId = MenuHandler.readLong("Transaction ID: ");
+//                        long carId = MenuHandler.readLong("Car ID: ");
+//                        long clientId = MenuHandler.readLong("Client ID: "); // Requesting Client ID instead of Name
+//
+//                        // Read and validate TransactionType
+//                        String transactionTypeInput = MenuHandler.readText("Transaction Type (SOLD/LEASED): ").trim().toUpperCase();
+//
+//                        if (!transactionTypeInput.equals("SOLD") && !transactionTypeInput.equals("LEASED")) {
+//                            throw new IllegalArgumentException("Invalid Transaction Type! Please choose SOLD / LEASED.");
+//                        }
+//
+//                        TransactionType transactionType = TransactionType.valueOf(transactionTypeInput);
+
+                        // Fetch car and client using IDs
+//                        Car car = carService.findCarById(carId);
+//                        Client client = clientService.findClientById(clientId); // Use Client ID to find the client
+
+
                         long transactionId = MenuHandler.readLong("Transaction ID: ");
                         long carId = MenuHandler.readLong("Car ID: ");
-                        long clientId = MenuHandler.readLong("Client ID: "); // Requesting Client ID instead of Name
-
-                        // Read and validate TransactionType
+                        long clientId = MenuHandler.readLong("Client ID: ");
                         String transactionTypeInput = MenuHandler.readText("Transaction Type (SOLD/LEASED): ").trim().toUpperCase();
-
-                        if (!transactionTypeInput.equals("SOLD") && !transactionTypeInput.equals("LEASED")) {
-                            throw new IllegalArgumentException("Invalid Transaction Type! Please choose SOLD / LEASED.");
-                        }
 
                         TransactionType transactionType = TransactionType.valueOf(transactionTypeInput);
 
-                        // Fetch car and client using IDs
-                        Car car = carService.findCarById(carId);
-                        Client client = clientService.findClientById(clientId); // Use Client ID to find the client
-
-                        // Create and add the transaction
                         Transaction transaction = new Transaction(transactionId, carId, clientId, transactionType, new java.util.Date());
-                        transactionController.addTransaction(transaction);
+
+                        if (useDatabase) {
+                            transactionController.addTransactionToDB(transactionId, carId, clientId, transactionType);
+                        } else {
+                            transactionController.addTransaction(transaction);
+                        }
                         System.out.println("Transaction added successfully.");
                     } catch (IllegalArgumentException e) {
                         System.err.println(e.getMessage());
@@ -466,7 +583,14 @@ public class ConsoleApp {
                         System.err.println("Error: " + e.getMessage());
                     }
                 }
-                case 2 -> transactionController.listAllTransactions();
+                case 2 -> {
+                    if (useDatabase) {
+                        transactionController.listAllTransactionsFromDB();
+                    } else {
+                        transactionController.listAllTransactions();
+                    }
+                }
+
                 case 3 -> {
                     String transactionTypeInput = MenuHandler.readText("Transaction Type (SOLD/LEASED): ").toUpperCase();
                     try {

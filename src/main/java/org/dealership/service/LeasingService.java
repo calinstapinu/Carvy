@@ -1,7 +1,9 @@
 package org.dealership.service;
 
 import org.dealership.model.Client;
+import org.dealership.model.Employee;
 import org.dealership.model.Leasing;
+import org.dealership.repository.DBRepository;
 import org.dealership.repository.entityRepos.LeasingRepository;
 
 import java.util.List;
@@ -14,6 +16,7 @@ import java.util.List;
 public class LeasingService {
     private final LeasingRepository leasingRepository;
     private final LeasingManager leasingManager;
+    private final DBRepository<Leasing> dbLeasingRepo;
 
 
     /**
@@ -22,9 +25,10 @@ public class LeasingService {
      * @param leasingRepository the repository to manage leasing repository.data
      * @param leasingManager    the manager responsible for leasing calculations
      */
-    public LeasingService(LeasingRepository leasingRepository, LeasingManager leasingManager, LeasingManagerImpl leasingManagerImpl) {
+    public LeasingService(LeasingRepository leasingRepository, LeasingManager leasingManager, LeasingManagerImpl leasingManagerImpl, DBRepository<Leasing> dbLeasingRepo) {
         this.leasingRepository = leasingRepository;
         this.leasingManager = leasingManager;
+        this.dbLeasingRepo = dbLeasingRepo;
     }
 
 
@@ -140,5 +144,9 @@ public class LeasingService {
         float denominator = (float) (Math.pow(1 + monthlyInterestRate, durationMonths) - 1);
 
         return numerator / denominator; // Monthly payment
+    }
+
+    public List<Leasing> getAllLeasings() {
+        return leasingRepository.readAll();
     }
 }

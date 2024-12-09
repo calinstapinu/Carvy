@@ -1,6 +1,7 @@
 package org.dealership.controller;
 
 import org.dealership.model.Client;
+import org.dealership.repository.DBRepository;
 import org.dealership.service.ClientService;
 
 import java.util.List;
@@ -11,9 +12,11 @@ import java.util.List;
  */
 public class ClientController {
     private final ClientService clientService;
+    private final DBRepository<Client> dbClientRepo;
 
-    public ClientController(ClientService clientService) {
+    public ClientController(ClientService clientService, DBRepository<Client> dbClientRepo) {
         this.clientService = clientService;
+        this.dbClientRepo = dbClientRepo;
     }
 
     // Adaugă un client nou
@@ -21,6 +24,16 @@ public class ClientController {
         Client client = new Client(firstName, lastName, cnp, clientId);
         clientService.addClient(client);
         System.out.println("The Client has been added successfully.");
+    }
+
+    public void addClientToDB(String firstName, String lastName, String cnp, Long clientId) {
+        try {
+            Client client = new Client(firstName, lastName, cnp, clientId);
+            dbClientRepo.create(client);
+            System.out.println("Client added successfully to the database!");
+        } catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+        }
     }
 
     /**
@@ -31,6 +44,10 @@ public class ClientController {
         List<Client> clients = clientService.getAllClients();
         System.out.println("The list with all clients: ");
         clients.forEach(System.out::println);
+    }
+
+    public void listAllClientsFromDB() {
+        dbClientRepo.readAll().forEach(System.out::println);
     }
 
     /**
@@ -72,6 +89,15 @@ public class ClientController {
         try {
             clientService.deleteClient(clientId);
             System.out.println("The Client with ID " + clientId + " has been deleted successfully.");
+        } catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+        }
+    }
+
+    public void deleteClientFromDB(long clientId) {
+        try {
+            dbClientRepo.delete(clientId);
+            System.out.println("Client deleted successfully from the database.");
         } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
         }

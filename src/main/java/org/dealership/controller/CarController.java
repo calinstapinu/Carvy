@@ -2,6 +2,7 @@ package org.dealership.controller;
 
 import org.dealership.model.Car;
 import org.dealership.model.enums.CarStatus;
+import org.dealership.repository.DBRepository;
 import org.dealership.service.CarService;
 
 import java.util.List;
@@ -13,14 +14,16 @@ import java.util.List;
  */
 public class CarController {
     private final CarService carService;
+    private final DBRepository<Car> dbCarRepo;
 
     /**
      * Constructs a new {@code CarController} with the specified car service.
      *
      * @param carService the service responsible for managing car operations
      */
-    public CarController(CarService carService) {
+    public CarController(CarService carService, DBRepository<Car> dbCarRepo) {
         this.carService = carService;
+        this.dbCarRepo = dbCarRepo;
     }
 
     /**
@@ -34,6 +37,21 @@ public class CarController {
     }
 
     /**
+     * Adds a new car to the database with the specified details.
+     */
+    public void addCarToDB(long carId, String brand, String model, int year, float price, int mileage, String status) {
+        try {
+            Car car = new Car(carId, brand, model, year, price, mileage, CarStatus.valueOf(status.toUpperCase()));
+            dbCarRepo.create(car);
+            System.out.println("Car added successfully to the database!");
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error: Invalid status. Please enter AVAILABLE, LEASED, or SOLD.");
+        } catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+        }
+    }
+
+    /**
      * Lists all cars in the system.
      */
     public void listAllCars() {
@@ -41,6 +59,14 @@ public class CarController {
         System.out.println("The list of all cars:");
         cars.forEach(System.out::println);
     }
+
+    /**
+     * Lists all cars from the database.
+     */
+    public void listAllCarsFromDB() {
+        dbCarRepo.readAll().forEach(System.out::println);
+    }
+
 
     /**
      * Lists all cars currently available for sale or lease.
@@ -160,4 +186,22 @@ public class CarController {
         sortedCars.forEach(System.out::println);
     }
 
+    public void deleteCarFromDB(long carId) {
+        try {
+            carService.deleteCarFromDB(carId);
+            System.out.println("Car with ID " + carId + " deleted successfully from the database.");
+        } catch (Exception e) {
+            System.err.println("Error: " + e.getMessage());
+        }
+    }
+
+
+    public void deleteCar(long carId) {
+        try{
+            carService.deleteCar(carId);
+            System.out.println("Car with ID " + carId + " deleted successfully from the database.");
+        } catch (Exception e){
+            System.err.println("Error: " + e.getMessage());
+        }
+    }
 }

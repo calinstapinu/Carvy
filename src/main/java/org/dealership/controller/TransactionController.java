@@ -1,7 +1,10 @@
 package org.dealership.controller;
 
+import org.dealership.model.Car;
+import org.dealership.model.Employee;
 import org.dealership.model.Transaction;
 import org.dealership.model.enums.TransactionType;
+import org.dealership.repository.DBRepository;
 import org.dealership.service.TransactionService;
 
 import java.util.List;
@@ -13,9 +16,11 @@ import java.util.List;
  */
 public class TransactionController {
     private final TransactionService transactionService;
+    private final DBRepository<Transaction> dbTransactionRepo;
 
-    public TransactionController(TransactionService transactionService) {
+    public TransactionController(TransactionService transactionService, DBRepository<Transaction> dbTransactionRepo) {
         this.transactionService = transactionService;
+        this.dbTransactionRepo = dbTransactionRepo;
     }
 
     public void addTransaction(Transaction transaction) {
@@ -27,10 +32,25 @@ public class TransactionController {
         }
     }
 
+    public void addTransactionToDB(long transactionId, long carId, long clientId, TransactionType transactionType) {
+        try {
+            Transaction transaction = new Transaction(transactionId, carId, clientId, transactionType, new java.util.Date());
+            dbTransactionRepo.create(transaction);
+            System.out.println("Transaction added successfully to the database!");
+        } catch (Exception e) {
+            System.err.println("Error adding transaction to the database: " + e.getMessage());
+        }
+    }
+
     public void listAllTransactions() {
         List<Transaction> transactions = transactionService.getAllTransactions();
         System.out.println("The list of all transactions:");
         transactions.forEach(System.out::println);
+    }
+
+
+    public void listAllTransactionsFromDB() {
+        dbTransactionRepo.readAll().forEach(System.out::println);
     }
 
     /**

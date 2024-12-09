@@ -2,7 +2,9 @@ package org.dealership.controller;
 
 import org.dealership.model.Car;
 import org.dealership.model.Client;
+import org.dealership.model.Employee;
 import org.dealership.model.Leasing;
+import org.dealership.repository.DBRepository;
 import org.dealership.service.LeasingService;
 import org.dealership.service.LeasingManager;
 
@@ -15,9 +17,11 @@ import java.util.List;
  */
 public class LeasingController {
     private final LeasingService leasingService;
+    private final DBRepository<Leasing> dbLeasingRepo;
 
-    public LeasingController(LeasingService leasingService) {
+    public LeasingController(LeasingService leasingService, DBRepository<Leasing> dbLeasingRepo) {
         this.leasingService = leasingService;
+        this.dbLeasingRepo = dbLeasingRepo;
     }
 
 
@@ -28,6 +32,27 @@ public class LeasingController {
             System.out.println("The Leasing Contract was successfully created.");
         } catch (Exception e) {
             System.err.println("There was an error creating the contract: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Adds a new leasing contract directly to the database with the specified details.
+     *
+     * @param leasingId      the ID of the leasing contract
+     * @param car            the car associated with the leasing
+     * @param client         the client associated with the leasing
+     * @param durationMonths the duration of the leasing in months
+     * @param interestRate   the interest rate
+     * @param monthlyRate    the calculated monthly rate
+     * @param totalAmount    the calculated total amount
+     */
+    public void addLeasingToDB(long leasingId, Car car, Client client, int durationMonths, float interestRate, float monthlyRate, float totalAmount) {
+        try {
+            Leasing leasing = new Leasing(leasingId, car, client, durationMonths, monthlyRate, interestRate, totalAmount);
+            dbLeasingRepo.create(leasing);
+            System.out.println("Leasing contract added successfully to the database!");
+        } catch (Exception e) {
+            System.err.println("Error adding leasing to the database: " + e.getMessage());
         }
     }
 
@@ -59,6 +84,17 @@ public class LeasingController {
         } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
         }
+    }
+
+
+    public void listAllLeasings() {
+        List<Leasing> leasings = leasingService.getAllLeasings();
+        System.out.println("List of employees:");
+        leasings.forEach(System.out::println);
+    }
+
+    public void listAllLeasingsFromDB() {
+        dbLeasingRepo.readAll().forEach(System.out::println);
     }
 
     /**
