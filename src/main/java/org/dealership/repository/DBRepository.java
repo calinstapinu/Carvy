@@ -35,33 +35,44 @@ public class DBRepository<T extends HasID> implements IRepository<T> {
             sql = generateInsertSQL(obj);
             System.out.println("Executing SQL: " + sql);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            throw new RuntimeException("Error generating SQL", e);
         }
+
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             setParameters(stmt, obj);
             System.out.println("Prepared statement parameters set.");
             stmt.executeUpdate();
+            System.out.println("Record inserted successfully into table: " + tableName);
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
+
     @Override
     public T read(long id) {
         String sql = "SELECT * FROM " + getTableName() + " WHERE " + getPrimaryKeyColumn() + " = ?";
+        System.out.println("Executing SQL: " + sql + " with ID: " + id);
+
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, id);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                return mapResultSetToObject(rs);
+                T obj = mapResultSetToObject(rs);
+                System.out.println("Object fetched from DB: " + obj);
+                return obj;
+            } else {
+                System.out.println("No record found for ID: " + id);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return null;
     }
+
 
     @Override
     public void update(T obj) {
@@ -316,6 +327,18 @@ public class DBRepository<T extends HasID> implements IRepository<T> {
                 currentClass = currentClass.getSuperclass();
             }
 
+            // Special handling for Car and Client fields
+            if (obj instanceof Leasing) {
+                Leasing leasing = (Leasing) obj;
+                if (leasing.getCarId() != 0) {
+                    leasing.setCar(fetchCarById(leasing.getCarId()));
+                }
+                if (leasing.getClientId() != 0) {
+                    leasing.setClient(fetchClientById(leasing.getClientId()));
+                }
+            }
+
+
             return obj;
         } catch (Exception e) {
             throw new SQLException("Error mapping ResultSet to object", e);
@@ -376,6 +399,17 @@ public class DBRepository<T extends HasID> implements IRepository<T> {
         String className = type.getSimpleName().toLowerCase();
         return className + "_id";
     }
+
+    private Car fetchCarById(long carId) {
+        DBRepository<Car> carRepo = new DBRepository<>(Car.class, "cars");
+        return carRepo.read(carId);
+    }
+
+    private Client fetchClientById(long clientId) {
+        DBRepository<Client> clientRepo = new DBRepository<>(Client.class, "clients");
+        return clientRepo.read(clientId);
+    }
+
 
 }
 

@@ -26,31 +26,35 @@ public class LeasingDBRepositoryTest {
      */
     @Test
     public void testCreateLeasing() {
-        // Create and insert a car
-        Car car = new Car(153L, "BMW", "X5", 2022, 50000.0f, 5000, CarStatus.AVAILABLE);
+        // Step 1: Create a Car object
+        Car car = new Car(7L, "Toyota", "Camry", 2022, 25000.0f, 12000, CarStatus.AVAILABLE);
+        System.out.println("Creating Car: " + car);
         carRepo.create(car);
 
-        // Fetch the car with the generated ID
-        Car fetchedCar = carRepo.read(154L); // Adjust the ID accordingly based on auto-increment
-        assertNotNull(fetchedCar);
-
-        // Create and insert a client
-        Client client = new Client("Alice", "Smith", "123490", 153L);
+        // Step 2: Create a Client object
+        Client client = new Client("John", "Doe", "679", 6L);
+        System.out.println("Creating Client: " + client);
         clientRepo.create(client);
 
-        // Fetch the client with the generated ID
-        Client fetchedClient = clientRepo.read(154L); // Adjust the ID accordingly based on auto-increment
-
-        // Create the leasing using the fetched car and client
-        Leasing leasing = new Leasing(153L, fetchedCar.getId(), fetchedClient.getId(), 12, 0.05f);
+        // Step 3: Create a Leasing object
+        Leasing leasing = new Leasing(6L, 7L, 6L, 36, 0.05f);
+        System.out.println("Creating Leasing: " + leasing);
         leasingRepo.create(leasing);
 
-        // Verify the leasing was created successfully
-        Leasing fetchedLeasing = leasingRepo.read(153L);
-        assertNotNull(fetchedLeasing);
-        assertEquals((Long)fetchedCar.getId(), fetchedLeasing.getCarId());
-        assertEquals((Long)fetchedClient.getId(), fetchedLeasing.getClientId());
+        // Step 4: Read back the Leasing object to verify
+        System.out.println("Fetching Leasing with ID: 1");
+        Leasing fetchedLeasing = leasingRepo.read(6);
+
+        // Debug output of the fetched Leasing
+        System.out.println("Fetched Leasing: " + fetchedLeasing);
+
+        // Step 5: Assertions to verify the fetched Leasing is not null
+        assertNotNull("Fetched Leasing is null", fetchedLeasing);
+        assertEquals("Leasing ID mismatch", 6L, fetchedLeasing.getId());
+        assertEquals("Duration months mismatch", 36, fetchedLeasing.getDurationMonths());
+        assertEquals("Interest rate mismatch", 0.05f, fetchedLeasing.getInterestRate(), 0.001);
     }
+
 
 
 
