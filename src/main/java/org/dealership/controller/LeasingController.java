@@ -1,5 +1,10 @@
 package org.dealership.controller;
 
+import org.dealership.exceptions.BusinessLogicException;
+import org.dealership.exceptions.DatabaseException;
+import org.dealership.exceptions.EntityNotFoundException;
+import org.dealership.exceptions.ValidationException;
+
 import org.dealership.model.Car;
 import org.dealership.model.Client;
 import org.dealership.model.Employee;
@@ -30,8 +35,10 @@ public class LeasingController {
             Leasing leasing = new Leasing(leasingId, car, client, durationMonths, interestRate);
             leasingService.addLeasing(leasing, downPayment, adminFee, taxRate);
             System.out.println("The Leasing Contract was successfully created.");
+        } catch (ValidationException e) {
+            throw e;
         } catch (Exception e) {
-            System.err.println("There was an error creating the contract: " + e.getMessage());
+            throw new DatabaseException("Error creating the leasing contract: " + e.getMessage());
         }
     }
 
@@ -51,8 +58,10 @@ public class LeasingController {
             Leasing leasing = new Leasing(leasingId, car, client, durationMonths, monthlyRate, interestRate, totalAmount);
             dbLeasingRepo.create(leasing);
             System.out.println("Leasing contract added successfully to the database!");
+        } catch (ValidationException e) {
+            throw e;
         } catch (Exception e) {
-            System.err.println("Error adding leasing to the database: " + e.getMessage());
+            throw new DatabaseException("Error adding leasing to the database: " + e.getMessage());
         }
     }
 
@@ -66,8 +75,10 @@ public class LeasingController {
             List<Leasing> leasings = leasingService.findLeasingsByClient(client);
             System.out.println("The Leasing Contracts associated with " + client.getFullName() + ":");
             leasings.forEach(System.out::println);
+        } catch (ValidationException | EntityNotFoundException e) {
+            throw e;
         } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
+            throw new DatabaseException("Error retrieving leasing contracts for client: " + e.getMessage());
         }
     }
 
@@ -81,8 +92,10 @@ public class LeasingController {
             Leasing leasing = leasingService.findLeasingById(leasingId);
             System.out.println("Leasing Contract found:");
             System.out.println(leasing);
+        } catch (EntityNotFoundException e) {
+            throw e;
         } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
+            throw new DatabaseException("Error finding leasing contract by ID: " + e.getMessage());
         }
     }
 
@@ -119,10 +132,10 @@ public class LeasingController {
             // Return the calculated total amount
             return totalAmount;
 
+        }  catch (ValidationException | EntityNotFoundException e) {
+            throw e;
         } catch (Exception e) {
-            // Handle errors and return 0 in case of failure
-            System.err.println("Error calculating total amount: " + e.getMessage());
-            return 0;
+            throw new DatabaseException("Error calculating total amount: " + e.getMessage());
         }
     }
 }

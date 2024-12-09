@@ -2,6 +2,7 @@ package org.dealership.repository;
 import org.dealership.model.HasID;
 import org.dealership.model.*;
 import java.sql.*;
+import org.dealership.exceptions.DatabaseException;
 import java.util.*;
 import java.lang.reflect.Field;
 

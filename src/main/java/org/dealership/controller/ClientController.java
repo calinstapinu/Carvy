@@ -1,5 +1,10 @@
 package org.dealership.controller;
 
+import org.dealership.exceptions.BusinessLogicException;
+import org.dealership.exceptions.DatabaseException;
+import org.dealership.exceptions.EntityNotFoundException;
+import org.dealership.exceptions.ValidationException;
+
 import org.dealership.model.Client;
 import org.dealership.repository.DBRepository;
 import org.dealership.service.ClientService;
@@ -31,8 +36,10 @@ public class ClientController {
             Client client = new Client(firstName, lastName, cnp, clientId);
             dbClientRepo.create(client);
             System.out.println("Client added successfully to the database!");
+        } catch (ValidationException e) {
+            throw e;
         } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
+            throw new DatabaseException("Error adding client to the database: " + e.getMessage());
         }
     }
 
@@ -60,8 +67,10 @@ public class ClientController {
             Client client = clientService.findClientById(clientId);
             System.out.println("Client found:");
             System.out.println(client);
+        } catch (EntityNotFoundException e) {
+            throw e;
         } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
+            throw new DatabaseException("Error finding client by ID: " + e.getMessage());
         }
     }
 
@@ -75,8 +84,10 @@ public class ClientController {
             Client client = clientService.findClientByName(name);
             System.out.println("Client found:");
             System.out.println(client);
+        } catch (ValidationException | EntityNotFoundException e) {
+            throw e;
         } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
+            throw new DatabaseException("Error finding client by name: " + e.getMessage());
         }
     }
 
@@ -89,8 +100,10 @@ public class ClientController {
         try {
             clientService.deleteClient(clientId);
             System.out.println("The Client with ID " + clientId + " has been deleted successfully.");
+        }catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Client with ID " + clientId + " not found.");
         } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
+            throw new DatabaseException("Error deleting client: " + e.getMessage());
         }
     }
 
@@ -98,8 +111,10 @@ public class ClientController {
         try {
             dbClientRepo.delete(clientId);
             System.out.println("Client deleted successfully from the database.");
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Client with ID " + clientId + " not found in the database.");
         } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
+            throw new DatabaseException("Error deleting client from the database: " + e.getMessage());
         }
     }
 }

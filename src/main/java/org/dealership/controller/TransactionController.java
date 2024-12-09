@@ -1,5 +1,10 @@
 package org.dealership.controller;
 
+import org.dealership.exceptions.BusinessLogicException;
+import org.dealership.exceptions.DatabaseException;
+import org.dealership.exceptions.EntityNotFoundException;
+import org.dealership.exceptions.ValidationException;
+
 import org.dealership.model.Car;
 import org.dealership.model.Employee;
 import org.dealership.model.Transaction;
@@ -27,8 +32,10 @@ public class TransactionController {
         try {
             transactionService.addTransaction(transaction);
             System.out.println("The transaction was successfully added.");
+        } catch (ValidationException e) {
+            throw e;
         } catch (Exception e) {
-            System.err.println("Error when adding the transaction: " + e.getMessage());
+            throw new DatabaseException("Error when adding the transaction: " + e.getMessage());
         }
     }
 
@@ -37,8 +44,10 @@ public class TransactionController {
             Transaction transaction = new Transaction(transactionId, carId, clientId, transactionType, new java.util.Date());
             dbTransactionRepo.create(transaction);
             System.out.println("Transaction added successfully to the database!");
+        } catch (ValidationException e) {
+            throw e;
         } catch (Exception e) {
-            System.err.println("Error adding transaction to the database: " + e.getMessage());
+            throw new DatabaseException("Error adding transaction to the database: " + e.getMessage());
         }
     }
 
@@ -64,8 +73,10 @@ public class TransactionController {
             List<Transaction> transactions = transactionService.findTransactionsByType(type);
             System.out.println("The transactions labeled as " + type + ":");
             transactions.forEach(System.out::println);
+        } catch (ValidationException | EntityNotFoundException e) {
+            throw e;
         } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
+            throw new DatabaseException("Error retrieving transactions by type: " + e.getMessage());
         }
     }
 }

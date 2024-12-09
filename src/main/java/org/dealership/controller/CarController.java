@@ -1,5 +1,10 @@
 package org.dealership.controller;
 
+import org.dealership.exceptions.BusinessLogicException;
+import org.dealership.exceptions.DatabaseException;
+import org.dealership.exceptions.EntityNotFoundException;
+import org.dealership.exceptions.ValidationException;
+
 import org.dealership.model.Car;
 import org.dealership.model.enums.CarStatus;
 import org.dealership.repository.DBRepository;
@@ -45,9 +50,9 @@ public class CarController {
             dbCarRepo.create(car);
             System.out.println("Car added successfully to the database!");
         } catch (IllegalArgumentException e) {
-            System.err.println("Error: Invalid status. Please enter AVAILABLE, LEASED, or SOLD.");
+            throw new ValidationException("Invalid status. Please enter AVAILABLE, LEASED, or SOLD.");
         } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
+            throw new DatabaseException("Error while adding car to the database: " + e.getMessage());
         }
     }
 
@@ -102,8 +107,10 @@ public class CarController {
         try {
             carService.markCarAsSold(carId);
             System.out.println("The Car with ID " + carId + " was marked as sold.");
-        } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Car with ID " + carId + " not found.");
+        } catch (BusinessLogicException e) {
+            throw new BusinessLogicException("Cannot mark car as sold: " + e.getMessage());
         }
     }
 
@@ -116,8 +123,10 @@ public class CarController {
         try {
             carService.markCarAsLeased(carId);
             System.out.println("The Car with ID " + carId + " was marked as leased.");
-        } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Car with ID " + carId + " not found.");
+        } catch (BusinessLogicException e) {
+            throw new BusinessLogicException("Cannot mark car as leased: " + e.getMessage());
         }
     }
 
@@ -190,8 +199,10 @@ public class CarController {
         try {
             carService.deleteCarFromDB(carId);
             System.out.println("Car with ID " + carId + " deleted successfully from the database.");
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Car with ID " + carId + " not found.");
         } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
+            throw new DatabaseException("Error deleting car from database: " + e.getMessage());
         }
     }
 
@@ -200,8 +211,10 @@ public class CarController {
         try{
             carService.deleteCar(carId);
             System.out.println("Car with ID " + carId + " deleted successfully from the database.");
-        } catch (Exception e){
-            System.err.println("Error: " + e.getMessage());
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Car with ID " + carId + " not found.");
+        } catch (Exception e) {
+            throw new DatabaseException("Error deleting car: " + e.getMessage());
         }
     }
 }

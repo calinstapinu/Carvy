@@ -5,6 +5,11 @@ import org.dealership.model.enums.CarStatus;
 import org.dealership.repository.DBRepository;
 import org.dealership.repository.entityRepos.CarRepository;
 
+import org.dealership.exceptions.BusinessLogicException;
+import org.dealership.exceptions.DatabaseException;
+import org.dealership.exceptions.EntityNotFoundException;
+import org.dealership.exceptions.ValidationException;
+
 import java.util.List;
 import java.util.stream.Collectors;
 

@@ -1,5 +1,10 @@
 package org.dealership.controller;
 
+import org.dealership.exceptions.BusinessLogicException;
+import org.dealership.exceptions.DatabaseException;
+import org.dealership.exceptions.EntityNotFoundException;
+import org.dealership.exceptions.ValidationException;
+
 import org.dealership.model.Car;
 import org.dealership.model.Client;
 import org.dealership.model.Employee;
@@ -33,8 +38,10 @@ public class EmployeeController {
             Employee employee = new Employee(firstName, lastName, cnp, employeeId, role);
             dbEmployeeRepo.create(employee);
             System.out.println("Employee added successfully to the database!");
+        } catch (ValidationException e) {
+            throw e;
         } catch (Exception e) {
-            System.err.println("Error adding employee to the database: " + e.getMessage());
+            throw new DatabaseException("Error adding employee to the database: " + e.getMessage());
         }
     }
 
@@ -53,8 +60,10 @@ public class EmployeeController {
             Employee employee = employeeService.findEmployeeById(employeeId);
             System.out.println("Employee found:");
             System.out.println(employee);
+        } catch (EntityNotFoundException e) {
+            throw e;
         } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
+            throw new DatabaseException("Error finding employee by ID: " + e.getMessage());
         }
     }
 
@@ -62,8 +71,12 @@ public class EmployeeController {
         try {
             employeeService.assignCarToEmployee(employeeId, car);
             System.out.println("The Car was successfully attributed to the Employee with ID " + employeeId + ".");
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Employee with ID " + employeeId + " or the car was not found.");
+        } catch (BusinessLogicException e) {
+            throw new BusinessLogicException("Cannot assign car to employee: " + e.getMessage());
         } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
+            throw new DatabaseException("Error assigning car to employee: " + e.getMessage());
         }
     }
 
@@ -71,8 +84,10 @@ public class EmployeeController {
         try {
             employeeService.deleteEmployee(employeeId);
             System.out.println("The Employee with ID " + employeeId + " has been successfully deleted.");
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Employee with ID " + employeeId + " not found.");
         } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
+            throw new DatabaseException("Error deleting employee: " + e.getMessage());
         }
     }
 
@@ -80,8 +95,10 @@ public class EmployeeController {
         try {
             dbEmployeeRepo.delete(employeeId);
             System.out.println("Employee deleted successfully from the database.");
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Employee with ID " + employeeId + " not found in the database.");
         } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
+            throw new DatabaseException("Error deleting employee from the database: " + e.getMessage());
         }
     }
 }
