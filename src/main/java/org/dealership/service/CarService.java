@@ -30,21 +30,15 @@ public class CarService {
     public void addCar(Car car) {
         carRepository.create(car);
     }
-
-
     public List<Car> getAllCars() {
         return carRepository.readAll();
     }
-
-
     public List<Car> getAvailableCars() {
         return carRepository.findAvailableCars();
     }
-
     public List<Car> getSoldCars() {
         return carRepository.findSoldCars();
     }
-
     public List<Car> getLeasedCars() {
         return carRepository.findLeasedCars();
     }
