@@ -11,6 +11,7 @@ import org.dealership.repository.DBRepository;
 import org.dealership.service.CarService;
 
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * Controller class for managing {@link Car} entities.
@@ -36,25 +37,54 @@ public class CarController {
      * The car is initially marked as {@link CarStatus#AVAILABLE}.
      * */
     public void addCar(long carId, String brand, String model, int year, float price, int mileage) {
-        Car car = new Car(carId, brand, model, year, price, mileage, CarStatus.AVAILABLE);
-        carService.addCar(car);
-        System.out.println("The Car was added successfully.");
-    }
-
-    /**
-     * Adds a new car to the database with the specified details.
-     */
-    public void addCarToDB(long carId, String brand, String model, int year, float price, int mileage, String status) {
         try {
-            Car car = new Car(carId, brand, model, year, price, mileage, CarStatus.valueOf(status.toUpperCase()));
-            dbCarRepo.create(car);
-            System.out.println("Car added successfully to the database!");
-        } catch (IllegalArgumentException e) {
+            Car car = new Car(carId, brand, model, year, price, mileage, CarStatus.AVAILABLE);
+            carService.addCar(car);
+            System.out.println("The Car was added successfully.");
+        }catch (IllegalArgumentException e) {
             throw new ValidationException("Invalid status. Please enter AVAILABLE, LEASED, or SOLD.");
-        } catch (Exception e) {
-            throw new DatabaseException("Error while adding car to the database: " + e.getMessage());
         }
     }
+//
+//    /**
+//     * Adds a new car to the database with the specified details.
+//     */
+//    public void addCarToDB(long carId, String brand, String model, int year, float price, int mileage, String status) {
+//        boolean carAdded = false;
+//        try {
+//            Car car = new Car(carId, brand, model, year, price, mileage, CarStatus.valueOf(status.toUpperCase()));
+//            dbCarRepo.create(car);
+//            System.out.println("Car added successfully to the database!");
+//        } catch (IllegalArgumentException e) {
+//            throw new ValidationException("Invalid status. Please enter AVAILABLE, LEASED, or SOLD.");
+//        } catch (Exception e) {
+//            throw new DatabaseException("Error while adding car to the database: " + e.getMessage());
+//        }
+//    }
+
+
+    public void addCarToDB(long carId, String brand, String model, int year, float price, int mileage, String status) {
+        Scanner scanner = new Scanner(System.in);
+        boolean carAdded = false;
+
+        while (!carAdded) {
+            try {
+                System.out.println("Please enter a valid car status: ");
+                status = scanner.nextLine();
+
+                Car car = new Car(carId, brand, model, year, price, mileage, CarStatus.valueOf(status.toUpperCase()));
+                dbCarRepo.create(car);
+                System.out.println("Car added successfully to the database!");
+                carAdded = true;
+
+            } catch (IllegalArgumentException e) {
+                throw new ValidationException("Invalid status. Please enter AVAILABLE, LEASED, or SOLD.");
+            } catch (Exception e) {
+                throw new DatabaseException("Error while adding car to the database: " + e.getMessage());
+            }
+        }
+    }
+
 
     /**
      * Lists all cars in the system.

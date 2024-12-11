@@ -58,6 +58,7 @@ public class ConsoleApp {
         EmployeeRepository empRepo = null;
         DBRepository<Employee> dbEmployeeRepo = null;
 
+
         LeasingRepository leasingRepo = null;
         DBRepository<Leasing> dbLeasingRepo = null;
 
