@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Carvy.iml" filepath="$PROJECT_DIR$/.idea/Carvy.iml" />
+      <module fileurl="file://$PROJECT_DIR$/CarvyGood.iml" filepath="$PROJECT_DIR$/CarvyGood.iml" />
     </modules>
   </component>
 </project>
