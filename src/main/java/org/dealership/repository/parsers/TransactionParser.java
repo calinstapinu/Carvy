@@ -33,22 +33,24 @@ public class TransactionParser implements EntityParser<Transaction> {
 
     @Override
     public Transaction fromCSV(String csv) {
-        String[] fields = csv.split(",", 5);
-        Car car = carParser.fromCSV(fields[1]);
-        Client client = clientParser.fromCSV(fields[2]);
+        String[] fields = csv.split(",", 5); // Ensure we split into exactly 5 fields
+        if (fields.length < 5) {
+            throw new IllegalArgumentException("Malformed CSV input: " + csv);
+        }
         try {
+            long transactionId = Long.parseLong(fields[0]);
+            long carId = Long.parseLong(fields[1]); // Treat as ID
+            long clientId = Long.parseLong(fields[2]); // Treat as ID
+            TransactionType type = TransactionType.valueOf(fields[3]);
             Date date = DATE_FORMAT.parse(fields[4]);
-            return new Transaction(
-                    Long.parseLong(fields[0]),
-                    Long.parseLong(fields[1]),
-                    Long.parseLong(fields[2]),
-                    TransactionType.valueOf(fields[3]),
-                    date
-            );
-        } catch (ParseException e) {
-            throw new RuntimeException("Failed to parse transaction date.", e);
+
+            // Return a Transaction object using the IDs
+            return new Transaction(transactionId, carId, clientId, type, date);
+        } catch (ParseException | IllegalArgumentException e) {
+            throw new RuntimeException("Failed to parse transaction CSV input: " + csv, e);
         }
     }
+
 
     @Override
     public long getId(Transaction transaction) {

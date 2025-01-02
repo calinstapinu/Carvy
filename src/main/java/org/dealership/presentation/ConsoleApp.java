@@ -1,6 +1,8 @@
 package org.dealership.presentation;
 
 import org.dealership.controller.*;
+import org.dealership.exceptions.DatabaseException;
+import org.dealership.exceptions.ValidationException;
 import org.dealership.model.*;
 import org.dealership.model.enums.TransactionType;
 import org.dealership.repository.entityRepos.*;
@@ -91,11 +93,43 @@ public class ConsoleApp {
         LeasingManagerImpl leasingManagerImpl = new LeasingManagerImpl();
 
         // Initialize services
-        CarService carService = new CarService(carRepo, dbCarRepo);
-        ClientService clientService = new ClientService(clientRepo, dbClientRepo);
-        EmployeeService employeeService = new EmployeeService(empRepo, dbEmployeeRepo);
-        LeasingService leasingService = new LeasingService(leasingRepo, leasingManager, leasingManagerImpl, dbLeasingRepo);
-        TransactionService transactionService = new TransactionService(transactionRepo, dbTransactionRepo);
+//
+        CarService carService = null;
+        if (useDatabase) {
+            carService = new CarService(null, dbCarRepo); // File-based repository is null
+        } else {
+            carService = new CarService(carRepo, null); // Database repository is null
+        }
+
+        ClientService clientService = null;
+        if (useDatabase) {
+            clientService = new ClientService(null, dbClientRepo); // File-based repository is null
+        } else {
+            clientService = new ClientService(clientRepo, null); // Database repository is null
+        }
+//        ClientService clientService = new ClientService(clientRepo, dbClientRepo);
+        EmployeeService employeeService = null;
+        if (useDatabase) {
+            employeeService = new EmployeeService(null, dbEmployeeRepo); // File-based repository is null
+        } else {
+            employeeService = new EmployeeService(empRepo, null); // Database repository is null
+        }
+
+       // LeasingService leasingService = new LeasingService(leasingRepo, leasingManager, leasingManagerImpl, dbLeasingRepo);
+        LeasingService leasingService = null;
+        if (useDatabase) {
+            leasingService = new LeasingService(null, leasingManager, leasingManagerImpl, dbLeasingRepo); // File-based repository is null
+        } else {
+            leasingService = new LeasingService(leasingRepo, leasingManager, leasingManagerImpl, null); // Database repository is null
+        }
+
+        TransactionService transactionService = null;
+        if (useDatabase) {
+            transactionService = new TransactionService(null, dbTransactionRepo); // File-based repository is null
+        } else {
+            transactionService = new TransactionService(transactionRepo, null); // Database repository is null
+        }
+
 
 
         // Initialize controllers
@@ -148,8 +182,8 @@ public class ConsoleApp {
                 case 1 -> carMenu(carController, useDatabase);
                 case 2 -> clientMenu(clientController, useDatabase);
                 case 3 -> employeeMenu(employeeController, carService, useDatabase);
-                case 4 -> leasingMenu(leasingController, carService, clientService, useDatabase);
-                case 5 -> transactionMenu(transactionController, carService, clientService, useDatabase);
+                case 4 -> leasingMenu(leasingController, carController, clientController, carService, clientService, useDatabase);
+                case 5 -> transactionMenu(transactionController, carController, clientController, carService, clientService, useDatabase);
                 case 0 -> {
                     System.out.println("Exiting...");
                     running = false;
@@ -235,18 +269,41 @@ public class ConsoleApp {
 
             switch (choice) {
                 case 1 -> {
-                    long carId = MenuHandler.readLong("Car ID: ");
+//                    long carId = MenuHandler.readLong("Car ID: ");
+                    boolean validId = false;
+                    long carId = 0;
+
+                    // Validate Car ID
+                    while (!validId) {
+                        try {
+                            carId = MenuHandler.readLong("Car ID: ");
+                            // Check if ID exists by attempting to find it
+                            if (useDatabase) {
+                                if (carController.findCarById(carId) != null) {
+                                    System.out.println("A car with this ID already exists. Please try again.");
+                                }
+                            } else {
+                                if (carController.findCarById(carId) != null) {
+                                    System.out.println("A car with this ID already exists. Please try again.");
+                                }
+                            }
+                        } catch (IllegalArgumentException e) {
+                            // ID does not exist, valid to use
+                            validId = true;
+                        }
+                    }
                     String brand = MenuHandler.readText("Brand: ");
                     String model = MenuHandler.readText("Model: ");
                     int year = MenuHandler.readInt("Year of Manufacture: ");
                     float price = MenuHandler.readFloat("Price: ");
                     int mileage = MenuHandler.readInt("Mileage: ");
-                    String status = MenuHandler.readText("Status (AVAILABLE, LEASED, SOLD): ");
                     if (useDatabase) {
+                        String status = MenuHandler.readText("Status (AVAILABLE, LEASED, SOLD): ");
                         carController.addCarToDB(carId, brand, model, year, price, mileage, status);
                     } else {
                         carController.addCar(carId, brand, model, year, price, mileage);
                     }
+
                 }
                 case 2 -> {
                     if (useDatabase) {
@@ -351,7 +408,27 @@ public class ConsoleApp {
 
             switch (choice) {
                 case 1 -> {
-                    Long clientId = MenuHandler.readLong("Client ID: ");
+//
+                    boolean validId = false;
+                    long clientId = 0;
+
+                    // Validate Client ID
+                    while (!validId) {
+                        try {
+                            clientId = MenuHandler.readLong("Client ID: ");
+                            clientController.findClientById(clientId);
+                            System.out.println("A client with this ID already exists. Please try again.");
+                        } catch (IllegalArgumentException e) {
+                            validId = true; // ID does not exist, valid to use
+                        } catch (DatabaseException e) {
+                            if (e.getMessage().contains("does not exist")) {
+                                validId = true; // ID is valid as it does not exist
+                            } else {
+                                System.err.println(e.getMessage());
+                                return; // Abort operation on unexpected database error
+                            }
+                        }
+                    }
                     String firstName = MenuHandler.readText("First Name: ");
                     String lastName = MenuHandler.readText("Last Name: ");
                     String cnp = MenuHandler.readText("CNP: ");
@@ -407,7 +484,23 @@ public class ConsoleApp {
 
             switch (choice) {
                 case 1 -> {
-                    Long employeeId = MenuHandler.readLong("Employee ID: ");
+                    boolean validId = false;
+                    long employeeId = 0;
+
+                    // Validate Employee ID
+                    while (!validId) {
+                        try {
+                            employeeId = MenuHandler.readLong("Employee ID: ");
+                            employeeController.findEmployeeById(employeeId);
+                            System.out.println("An employee with this ID already exists. Please try again.");
+                        } catch (IllegalArgumentException e) {
+                            validId = true; // ID is valid, proceed with gathering the rest of the data
+                        } catch (DatabaseException e) {
+                            // If we catch a DatabaseException, it means no employee with this ID exists.
+                            validId = true; // Now the ID is valid, so proceed
+                        }
+                    }
+
                     String firstName = MenuHandler.readText("First Name: ");
                     String lastName = MenuHandler.readText("Last Name: ");
                     String cnp = MenuHandler.readText("CNP: ");
@@ -458,7 +551,7 @@ public class ConsoleApp {
         }
     }
 
-    private static void leasingMenu(LeasingController leasingController, CarService carService, ClientService clientService, boolean useDatabase) {
+    private static void leasingMenu(LeasingController leasingController, CarController carController, ClientController clientController, CarService carService, ClientService clientService, boolean useDatabase) {
         boolean inLeasingMenu = true;
 
         while (inLeasingMenu) {
@@ -470,45 +563,85 @@ public class ConsoleApp {
 
             switch (choice) {
                 case 1 -> {
-                    long leasingId = MenuHandler.readInt("Leasing ID: ");
-                    long carId = MenuHandler.readLong("Car ID: ");
-                    long clientId = MenuHandler.readLong("Client ID: ");
-
-                    try {
-                        Car car = carService.findCarById(carId);
-                        Client client = clientService.findClientById(clientId);
-
-                        int durationMonths = MenuHandler.readInt("Contract Duration (months): ");
-                        int monthlyRate = MenuHandler.readInt("Contract Monthly Rate: ");
-                        int totalAmount = MenuHandler.readInt("Contract Total Amount: ");
-                        float interestRate = MenuHandler.readFloat("Interest Rate: ");
-                        float downPayment = MenuHandler.readFloat("Down Payment: ");
-                        float adminFee = MenuHandler.readFloat("Administrative Fee: ");
-                        float taxRate = MenuHandler.readFloat("Tax Rate (%): ");
-                        if (useDatabase) {
-                            leasingController.addLeasingToDB(leasingId, car, client, durationMonths, monthlyRate, interestRate, totalAmount);
-                        } else {
-                            leasingController.createLeasing(leasingId, car, client, durationMonths, interestRate, downPayment, adminFee, taxRate);
+//                    long leasingId = MenuHandler.readInt("Leasing ID: ");
+//                    long carId = MenuHandler.readLong("Car ID: ");
+//                    long clientId = MenuHandler.readLong("Client ID: ");
+                    boolean validLeasingId = false;
+                    long leasingId = 0;
+//
+//                    // Validate Leasing ID
+//                    while (!validLeasingId) {
+//                        try {
+//                            leasingId = MenuHandler.readLong("Leasing ID: ");
+//                            leasingController.findLeasingById(leasingId); // Check if the ID exists
+//                            System.out.println("A leasing contract with this ID already exists. Please try again.");
+//                        } catch (IllegalArgumentException e) {
+//                            validLeasingId = true; // ID is valid and unique
+//                        } catch (DatabaseException e) {
+//                            System.out.println("This ID is available. You can proceed.");
+//                            validLeasingId = true;
+//                        }
+//                    }
+                    // Validate Car ID
+                    while (!validLeasingId) {
+                        try {
+                            leasingId = MenuHandler.readLong("Leasing ID: ");
+                            leasingController.findLeasingById(leasingId);
+                            System.out.println("A leasing with this ID already exists. Please try again.");
+                        } catch (IllegalArgumentException e) {
+                            validLeasingId = true; // ID does not exist, valid to use
+                        } catch (DatabaseException e) {
+                            if (e.getMessage().contains("does not exist")) {
+                                validLeasingId = true; // ID is valid as it does not exist
+                            } else {
+                                System.err.println(e.getMessage());
+                                return; // Abort operation on unexpected database error
+                            }
                         }
+                    }
 
-                    } catch (IllegalArgumentException e) {
-                        System.err.println("Error: " + e.getMessage());
+                    boolean validCarId = false;
+                    long carId = 0;
+
+                    while (!validCarId) {
+                        try {
+                            carId = MenuHandler.readLong("Car ID: ");
+                            carController.findCarById(carId); // Ensure the Car exists
+                            validCarId = true;
+                        } catch (IllegalArgumentException e) {
+                            System.out.println("Invalid Car ID. The car does not exist. Please try again.");
+                        }
+                    }
+
+                    boolean validClientId = false;
+                    long clientId = 0;
+
+                    while (!validClientId) {
+                        try {
+                            clientId = MenuHandler.readLong("Client ID: ");
+                            clientController.findClientById(clientId); // Ensure the Client exists
+                            validClientId = true;
+                        } catch (IllegalArgumentException e) {
+                            System.out.println("Invalid Client ID. The client does not exist. Please try again.");
+                        }
+                    }
+
+                    Car car = carService.findCarById(carId);
+                    Client client = clientService.findClientById(clientId);
+
+                    int durationMonths = MenuHandler.readInt("Contract Duration (months): ");
+                    int monthlyRate = MenuHandler.readInt("Contract Monthly Rate: ");
+                    int totalAmount = MenuHandler.readInt("Contract Total Amount: ");
+                    float interestRate = MenuHandler.readFloat("Interest Rate: ");
+                    float downPayment = MenuHandler.readFloat("Down Payment: ");
+                    float adminFee = MenuHandler.readFloat("Administrative Fee: ");
+                    float taxRate = MenuHandler.readFloat("Tax Rate (%): ");
+                    if (useDatabase) {
+                        leasingController.addLeasingToDB(leasingId, car, client, durationMonths, monthlyRate, interestRate, totalAmount);
+                    } else {
+                        leasingController.createLeasing(leasingId, car, client, durationMonths, interestRate, downPayment, adminFee, taxRate);
                     }
                 }
-//                case 2 -> {
-//                    long clientId = MenuHandler.readLong("Client ID: ");
-//
-//                    try {
-//                        Client client = clientService.findClientById(clientId);
-//                        leasingController.listLeasingsByClient(client);
-//                    } catch (IllegalArgumentException e) {
-//                        System.err.println("Error: " + e.getMessage());
-//                    }
-//                }
-//                case 2 -> {
-//                    long leasingId = MenuHandler.readLong("Leasing Contract ID: ");
-//                    leasingController.findLeasingById(leasingId);
-//                }
                 case 2 -> {
                     if (useDatabase) {
                         leasingController.listAllLeasingsFromDB();
@@ -532,7 +665,7 @@ public class ConsoleApp {
         }
     }
 
-    private static void transactionMenu(TransactionController transactionController, CarService carService, ClientService clientService, boolean useDatabase) {
+    private static void transactionMenu(TransactionController transactionController, CarController carController, ClientController clientController, CarService carService, ClientService clientService, boolean useDatabase) {
         boolean inTransactionMenu = true;
 
         while (inTransactionMenu) {
@@ -545,27 +678,52 @@ public class ConsoleApp {
             switch (choice) {
                 case 1 -> { // Adding a transaction
                     try {
-//                        long transactionId = MenuHandler.readLong("Transaction ID: ");
-//                        long carId = MenuHandler.readLong("Car ID: ");
-//                        long clientId = MenuHandler.readLong("Client ID: "); // Requesting Client ID instead of Name
-//
-//                        // Read and validate TransactionType
-//                        String transactionTypeInput = MenuHandler.readText("Transaction Type (SOLD/LEASED): ").trim().toUpperCase();
-//
-//                        if (!transactionTypeInput.equals("SOLD") && !transactionTypeInput.equals("LEASED")) {
-//                            throw new IllegalArgumentException("Invalid Transaction Type! Please choose SOLD / LEASED.");
-//                        }
-//
-//                        TransactionType transactionType = TransactionType.valueOf(transactionTypeInput);
+                        boolean validId = false;
+                        long transactionId = 0;
 
-                        // Fetch car and client using IDs
-//                        Car car = carService.findCarById(carId);
-//                        Client client = clientService.findClientById(clientId); // Use Client ID to find the client
+                        // Validate Transaction ID
+                        while (!validId) {
+                            try {
+                                transactionId = MenuHandler.readLong("Transaction ID: ");
+                                transactionController.findTransactionById(transactionId);
+                                System.out.println("A transaction with this ID already exists. Please try again.");
+                            } catch (IllegalArgumentException e) {
+                                validId = true; // ID is valid, proceed with gathering the rest of the data
+                            } catch (DatabaseException e) {
+                                // If we catch a DatabaseException, it means no transaction with this ID exists.
+                                System.out.println("This ID is available. You can proceed.");
+                                validId = true; // Now the ID is valid, so proceed
+                            }
+                        }
 
+                        boolean validCarId = false;
+                        long carId = 0;
 
-                        long transactionId = MenuHandler.readLong("Transaction ID: ");
-                        long carId = MenuHandler.readLong("Car ID: ");
-                        long clientId = MenuHandler.readLong("Client ID: ");
+                        // Validate Car ID
+                        while (!validCarId) {
+                            try {
+                                carId = MenuHandler.readLong("Car ID: ");
+                                carController.findCarById(carId);
+                                validCarId = true;
+                            } catch (IllegalArgumentException e) {
+                                System.out.println("Invalid Car ID. The car does not exist. Please try again.");
+                            }
+                        }
+
+                        boolean validClientId = false;
+                        long clientId = 0;
+
+                        // Validate Client ID
+                        while (!validClientId) {
+                            try {
+                                clientId = MenuHandler.readLong("Client ID: ");
+                                clientController.findClientById(clientId);
+                                validClientId = true;
+                            } catch (IllegalArgumentException e) {
+                                System.out.println("Invalid Client ID. The client does not exist. Please try again.");
+                            }
+                        }
+
                         String transactionTypeInput = MenuHandler.readText("Transaction Type (SOLD/LEASED): ").trim().toUpperCase();
 
                         TransactionType transactionType = TransactionType.valueOf(transactionTypeInput);

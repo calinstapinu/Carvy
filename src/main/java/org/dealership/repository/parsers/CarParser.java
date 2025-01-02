@@ -36,6 +36,9 @@ public class CarParser implements EntityParser<Car> {
     @Override
     public Car fromCSV(String csv) {
         String[] fields = csv.split(",");
+        if (fields.length < 7) {
+            throw new IllegalArgumentException("Malformed CSV input for Car: " + csv);
+        }
         return new Car(
                 Long.parseLong(fields[0]),
                 fields[1],

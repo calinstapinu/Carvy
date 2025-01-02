@@ -57,6 +57,7 @@ public class LeasingController {
         try {
             Leasing leasing = new Leasing(leasingId, car, client, durationMonths, monthlyRate, interestRate, totalAmount);
             dbLeasingRepo.create(leasing);
+            System.out.println("Leasing Created: " + leasing.toStringWithIds()); //
             System.out.println("Leasing contract added successfully to the database!");
         } catch (ValidationException e) {
             throw e;
@@ -90,8 +91,6 @@ public class LeasingController {
     public void findLeasingById(long leasingId) {
         try {
             Leasing leasing = leasingService.findLeasingById(leasingId);
-            System.out.println("Leasing Contract found:");
-            System.out.println(leasing);
         } catch (EntityNotFoundException e) {
             throw e;
         } catch (Exception e) {
@@ -100,10 +99,18 @@ public class LeasingController {
     }
 
 
+//    public void listAllLeasings() {
+//        List<Leasing> leasings = leasingService.getAllLeasings();
+//        System.out.println("List of Leasing Contracts:");
+//        leasings.forEach(System.out::println);
+//    }
+
     public void listAllLeasings() {
         List<Leasing> leasings = leasingService.getAllLeasings();
-        System.out.println("List of employees:");
-        leasings.forEach(System.out::println);
+        System.out.println("List of Leasing Contracts:");
+        for (Leasing leasing : leasings) {
+            System.out.println(leasing.toStringWithIds()); // Use the new method here
+        }
     }
 
     public void listAllLeasingsFromDB() {

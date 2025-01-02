@@ -62,6 +62,14 @@ public class TransactionController {
         dbTransactionRepo.readAll().forEach(System.out::println);
     }
 
+    public Transaction findTransactionById(long transactionId) {
+        if (transactionService == null) {
+            throw new IllegalStateException("TransactionService is not initialized.");
+        }
+        return transactionService.findTransactionById(transactionId);
+    }
+
+
     /**
      * Lists all transactions of a specific type.
      * Each transaction's details are printed to the console.

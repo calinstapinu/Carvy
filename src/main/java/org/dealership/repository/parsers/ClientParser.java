@@ -29,6 +29,9 @@ public class ClientParser implements EntityParser<Client> {
     @Override
     public Client fromCSV(String csv) {
         String[] fields = csv.split(",");
+        if (fields.length < 4) {
+            throw new IllegalArgumentException("Malformed CSV input for Client: " + csv);
+        }
         return new Client(
                 fields[1], // firstName
                 fields[2], // lastName

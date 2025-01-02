@@ -25,6 +25,26 @@ public class TransactionService {
         transactionRepository.create(transaction);
     }
 
+    public Transaction findTransactionById(long transactionId) {
+        if (dbTransactionRepo != null) {
+            // Use database repository
+            Transaction transaction = dbTransactionRepo.read(transactionId);
+            if (transaction == null) {
+                throw new IllegalArgumentException("The Transaction with ID " + transactionId + " does not exist.");
+            }
+            return transaction;
+        } else if (transactionRepository != null) {
+            // Use file repository
+            Transaction transaction = transactionRepository.read(transactionId);
+            if (transaction == null) {
+                throw new IllegalArgumentException("The Transaction with ID " + transactionId + " does not exist.");
+            }
+            return transaction;
+        } else {
+            throw new IllegalStateException("No repository initialized for TransactionService.");
+        }
+    }
+
     public List<Transaction> findTransactionsByType(TransactionType type) {
         return transactionRepository.findByType(type);
     }

@@ -65,12 +65,8 @@ public class ClientController {
     public void findClientById(long clientId) {
         try {
             Client client = clientService.findClientById(clientId);
-            System.out.println("Client found:");
-            System.out.println(client);
         } catch (EntityNotFoundException e) {
             throw e;
-        } catch (Exception e) {
-            throw new DatabaseException("Error finding client by ID: " + e.getMessage());
         }
     }
 

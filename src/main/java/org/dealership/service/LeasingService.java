@@ -62,11 +62,23 @@ public class LeasingService {
      * @throws IllegalArgumentException if the leasing contract does not exist
      */
     public Leasing findLeasingById(long leasingId) {
-        Leasing leasing = leasingRepository.read(leasingId);
-        if (leasing == null) {
-            throw new IllegalArgumentException("The Leasing Contract with ID " + leasingId + " does not exist.");
+        if (dbLeasingRepo != null) {
+            // Use database repository
+            Leasing leasing = dbLeasingRepo.read(leasingId);
+            if (leasing == null) {
+                throw new IllegalArgumentException("The Leasing with ID " + leasingId + " does not exist.");
+            }
+            return leasing;
+        } else if (leasingRepository != null) {
+            // Use file repository
+            Leasing leasing = leasingRepository.read(leasingId);
+            if (leasing == null) {
+                throw new IllegalArgumentException("The Leasing with ID " + leasingId + " does not exist.");
+            }
+            return leasing;
+        } else {
+            throw new IllegalStateException("No repository initialized for LeasingService.");
         }
-        return leasing;
     }
 
 

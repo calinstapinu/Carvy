@@ -31,13 +31,33 @@ public class ClientService {
      * @return the {@link Client} with the specified ID
      * @throws IllegalArgumentException if the client does not exist
      */
+//    public Client findClientById(long clientId) {
+//        Client client = clientRepository.read(clientId);
+//        if (client == null) {
+//            throw new IllegalArgumentException("The Client with ID " + clientId + " does not exist.");
+//        }
+//        return client;
+//    }
     public Client findClientById(long clientId) {
-        Client client = clientRepository.read(clientId);
-        if (client == null) {
-            throw new IllegalArgumentException("The Client with ID " + clientId + " does not exist.");
+        if (dbClientRepo != null) {
+            // Use database repository
+            Client client = dbClientRepo.read(clientId);
+            if (client == null) {
+                throw new IllegalArgumentException("The Client with ID " + clientId + " does not exist.");
+            }
+            return client;
+        } else if (clientRepository != null) {
+            // Use file repository
+            Client client = clientRepository.read(clientId);
+            if (client == null) {
+                throw new IllegalArgumentException("The Client with ID " + clientId + " does not exist.");
+            }
+            return client;
+        } else {
+            throw new IllegalStateException("No repository initialized for ClientService.");
         }
-        return client;
     }
+
 
     /**
      * Finds a client by their name.

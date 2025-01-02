@@ -34,11 +34,14 @@ public class Leasing implements HasID{
         this.leasingId = leasingId;
         this.car = car;
         this.client = client;
+        this.carId = car != null ? car.getId() : 0; // Ensure carId is set
+        this.clientId = client != null ? client.getId() : 0; // Ensure clientId is set
         this.durationMonths = durationMonths;
         this.interestRate = interestRate;
         this.monthlyRate = calculateMonthlyRate();
         this.totalAmount = calculateTotalAmount();
     }
+
 
     // Constructor with carId and clientId
     public Leasing(Long leasingId, Long carId, Long clientId, int durationMonths, float interestRate) {
@@ -61,6 +64,16 @@ public class Leasing implements HasID{
         this.totalAmount = totalAmount;
     }
 
+    public Leasing(Long leasingId, Long carId, Long clientId, int durationMonths, float interestRate, float monthlyRate, float totalAmount) {
+        this.leasingId = leasingId;
+        this.carId = carId;
+        this.clientId = clientId;
+        this.durationMonths = durationMonths;
+        this.interestRate = interestRate;
+        this.monthlyRate = monthlyRate;
+        this.totalAmount = totalAmount;
+    }
+
     public long getId() {
         return leasingId;
     }
@@ -75,15 +88,19 @@ public class Leasing implements HasID{
 
     public void setCar(Car car) {
         this.car = car;
+        this.carId = car != null ? car.getId() : 0; // Update carId
     }
+
+    public void setClient(Client client) {
+        this.client = client;
+        this.clientId = client != null ? client.getId() : 0; // Update clientId
+    }
+
 
     public Client getClient() {
         return client;
     }
 
-    public void setClient(Client client) {
-        this.client = client;
-    }
 
     public Long getCarId() {
         return carId;
@@ -159,4 +176,17 @@ public class Leasing implements HasID{
                 ", totalAmount=" + totalAmount +
                 '}';
     }
+
+    public String toStringWithIds() {
+        return "Leasing{" +
+                "leasingId=" + leasingId +
+                ", carId=" + carId +
+                ", clientId=" + clientId +
+                ", durationMonths=" + durationMonths +
+                ", interestRate=" + interestRate +
+                ", monthlyRate=" + monthlyRate +
+                ", totalAmount=" + totalAmount +
+                '}';
+    }
+
 }

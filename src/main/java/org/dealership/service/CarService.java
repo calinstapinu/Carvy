@@ -28,8 +28,13 @@ public class CarService {
     }
 
     public void addCar(Car car) {
+        Car existingCar = carRepository.read(car.getId());
+        if (existingCar != null) {
+            throw new ValidationException("A car with ID " + car.getId() + " already exists.");
+        }
         carRepository.create(car);
     }
+
     public List<Car> getAllCars() {
         return carRepository.readAll();
     }
@@ -82,13 +87,33 @@ public class CarService {
      * @return the {@link Car} entity with the specified ID
      * @throws IllegalArgumentException if the car does not exist
      */
+//    public Car findCarById(long carId) {
+//        Car car = carRepository.read(carId);
+//        if (car == null) {
+//            throw new IllegalArgumentException("The Car with ID " + carId + " does not exist.");
+//        }
+//        return car;
+//    }
     public Car findCarById(long carId) {
-        Car car = carRepository.read(carId);
-        if (car == null) {
-            throw new IllegalArgumentException("The Car with ID " + carId + " does not exist.");
+        if (dbCarRepository != null) {
+            // Use database repository
+            Car car = dbCarRepository.read(carId);
+            if (car == null) {
+                throw new IllegalArgumentException("The Car with ID " + carId + " does not exist.");
+            }
+            return car;
+        } else if (carRepository != null) {
+            // Use file repository
+            Car car = carRepository.read(carId);
+            if (car == null) {
+                throw new IllegalArgumentException("The Car with ID " + carId + " does not exist.");
+            }
+            return car;
+        } else {
+            throw new IllegalStateException("No repository initialized.");
         }
-        return car;
     }
+
 
     /**
      * Finds cars by their name (brand or model).

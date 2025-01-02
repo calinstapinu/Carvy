@@ -42,9 +42,7 @@ public class DBRepository<T extends HasID> implements IRepository<T> {
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             setParameters(stmt, obj);
-            System.out.println("Prepared statement parameters set.");
             stmt.executeUpdate();
-            System.out.println("Record inserted successfully into table: " + tableName);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -63,7 +61,7 @@ public class DBRepository<T extends HasID> implements IRepository<T> {
                 T obj = mapResultSetToObject(rs);
                 return obj;
             } else {
-                System.out.println("No record found for ID: " + id);
+                System.out.println("Valid ID: " + id);
             }
         } catch (SQLException e) {
             e.printStackTrace();

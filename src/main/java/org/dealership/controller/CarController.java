@@ -41,7 +41,9 @@ public class CarController {
             Car car = new Car(carId, brand, model, year, price, mileage, CarStatus.AVAILABLE);
             carService.addCar(car);
             System.out.println("The Car was added successfully.");
-        }catch (IllegalArgumentException e) {
+        } catch (ValidationException e) {
+            System.err.println("Error: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
             throw new ValidationException("Invalid status. Please enter AVAILABLE, LEASED, or SOLD.");
         }
     }

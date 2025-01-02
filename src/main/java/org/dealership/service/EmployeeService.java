@@ -34,13 +34,34 @@ public class EmployeeService {
      * @return the {@link Employee} with the specified ID
      * @throws IllegalArgumentException if the employee does not exist
      */
+//    public Employee findEmployeeById(long employeeId) {
+//        Employee employee = employeeRepository.read(employeeId);
+//        if (employee == null) {
+//            throw new IllegalArgumentException("The Employee with ID " + employeeId + " does not exist.");
+//        }
+//        return employee;
+//    }
+
     public Employee findEmployeeById(long employeeId) {
-        Employee employee = employeeRepository.read(employeeId);
-        if (employee == null) {
-            throw new IllegalArgumentException("The Employee with ID " + employeeId + " does not exist.");
+        if (dbEmployeeRepo != null) {
+            // Use database repository
+            Employee employee = dbEmployeeRepo.read(employeeId);
+            if (employee == null) {
+                throw new IllegalArgumentException("The Employee with ID " + employeeId + " does not exist.");
+            }
+            return employee;
+        } else if (employeeRepository != null) {
+            // Use file repository
+            Employee employee = employeeRepository.read(employeeId);
+            if (employee == null) {
+                throw new IllegalArgumentException("The Employee with ID " + employeeId + " does not exist.");
+            }
+            return employee;
+        } else {
+            throw new IllegalStateException("No repository initialized for EmployeeService.");
         }
-        return employee;
     }
+
 
 
     public List<Employee> getAllEmployees() {

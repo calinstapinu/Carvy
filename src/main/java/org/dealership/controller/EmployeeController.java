@@ -58,8 +58,6 @@ public class EmployeeController {
     public void findEmployeeById(long employeeId) {
         try {
             Employee employee = employeeService.findEmployeeById(employeeId);
-            System.out.println("Employee found:");
-            System.out.println(employee);
         } catch (EntityNotFoundException e) {
             throw e;
         } catch (Exception e) {
