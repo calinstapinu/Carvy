@@ -54,6 +54,9 @@ public class ConsoleApp {
 
         clearConsole();
 
+        DBRepository<User> userRepository = new DBRepository<>(User.class, "users");
+
+
         // Initialize repositories based on choice
         CarRepository carRepo = null;
         DBRepository<Car> dbCarRepo = null;
@@ -91,6 +94,7 @@ public class ConsoleApp {
                 dbEmployeeRepo = new DBRepository<>(Employee.class, "employees");
                 dbLeasingRepo = new DBRepository<>(Leasing.class, "leasings");
                 dbTransactionRepo = new DBRepository<>(Transaction.class, "transactions");
+
             }
             case 3 -> {
                 inMemoryCarRepo = new InMemoryRepository<>();
@@ -157,14 +161,25 @@ public class ConsoleApp {
         while (appRunning) {
             int userType = MenuHandler.showMenu("Welcome to Carvy - Your Dealership", new String[]{
                     "Administrator",
-                    "Client"
+                    "Client",
+                    "Register New Client",
             });
 
             switch (userType) {
-                case 1 ->
+                case 1 -> {
+                    if (login("Administrator", userRepository)) {
                         adminMenu(carController, clientController, employeeController, leasingController, transactionController, carService, clientService, useDatabase);
-                case 2 -> clientMenu(carController, leasingController, clientService, leasingService);
+                    }
+                }
+                case 2 -> {
+                    if (login("Client", userRepository)) {
+                        clientMenu(carController, leasingController, clientService, leasingService);
+                    }
+                }
                 case 3 -> {
+                    registerNewClient(userRepository);
+                }
+                case 4 -> {
                     System.out.println("Exiting the application...");
                     appRunning = false; // Ends the application
                 }
@@ -787,5 +802,36 @@ public class ConsoleApp {
             System.out.println();
         }
     }
+
+    private static void registerNewClient(DBRepository<User> userRepository) {
+        System.out.println("===== Register New Client =====");
+
+        String username = MenuHandler.readText("Enter a username: ");
+        String password = MenuHandler.readText("Enter a password: ");
+
+        boolean success = userRepository.registerUser(username, password, "Client");
+
+        if (success) {
+            System.out.println("Client account created successfully!");
+        } else {
+            System.out.println("Failed to create client account. Please try again.");
+        }
+    }
+
+    private static boolean login(String role, DBRepository<User> userRepository) {
+        System.out.println("===== " + role + " Login =====");
+
+        String username = MenuHandler.readText("Username: ");
+        String password = MenuHandler.readText("Password: ");
+
+        if (userRepository.validateUser(username, password, role)) {
+            System.out.println("Welcome, " + role + "!");
+            return true;
+        }
+
+        System.out.println("Invalid credentials. Access denied.");
+        return false;
+    }
+
 
 }

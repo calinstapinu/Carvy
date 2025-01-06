@@ -17,6 +17,7 @@ public class DBRepository<T extends HasID> implements IRepository<T> {
     private final Class<T> type;
     private final String tableName;
 
+
     // Database connection parameters
     private static final String URL = "jdbc:postgresql://localhost:5432/carvy";
     private static final String USER = "postgres";
@@ -454,6 +455,45 @@ public class DBRepository<T extends HasID> implements IRepository<T> {
         return cars;
     }
 
+    // Method to register a new user
+    public boolean registerUser(String username, String password, String role) {
+        String query = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, username);
+            stmt.setString(2, password);
+            stmt.setString(3, role);
+
+            int rowsInserted = stmt.executeUpdate();
+            return rowsInserted > 0;
+        } catch (SQLException e) {
+            if ("23505".equals(e.getSQLState())) { // Duplicate entry error code for PostgreSQL
+                System.out.println("Username already exists. Please choose a different one.");
+            } else {
+                e.printStackTrace();
+            }
+            return false;
+        }
+    }
+
+    // Method to validate a user's credentials
+    public boolean validateUser(String username, String password, String role) {
+        String query = "SELECT * FROM users WHERE username = ? AND password = ? AND role = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, username);
+            stmt.setString(2, password);
+            stmt.setString(3, role);
+
+            ResultSet rs = stmt.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
 
 }

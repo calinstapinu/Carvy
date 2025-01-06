@@ -75,4 +75,6 @@ public class MenuHandler {
         System.out.print(prompt);
         return scanner.nextFloat();
     }
+
+
 }
