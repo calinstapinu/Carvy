@@ -4,6 +4,7 @@ import org.dealership.model.*;
 import java.sql.*;
 import org.dealership.exceptions.DatabaseException;
 import org.dealership.model.enums.CarStatus;
+import org.dealership.utils.PasswordUtil;
 
 import java.util.*;
 import java.lang.reflect.Field;
@@ -455,15 +456,18 @@ public class DBRepository<T extends HasID> implements IRepository<T> {
         return cars;
     }
 
-    // Method to register a new user
     public boolean registerUser(String username, String password, String role) {
-        String query = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
+        String salt = PasswordUtil.generateSalt();
+        String hashedPassword = PasswordUtil.hashPassword(password, salt);
+
+        String query = "INSERT INTO users (username, password, salt, role) VALUES (?, ?, ?, ?)";
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, username);
-            stmt.setString(2, password);
-            stmt.setString(3, role);
+            stmt.setString(2, hashedPassword);
+            stmt.setString(3, salt);
+            stmt.setString(4, role);
 
             int rowsInserted = stmt.executeUpdate();
             return rowsInserted > 0;
@@ -477,23 +481,31 @@ public class DBRepository<T extends HasID> implements IRepository<T> {
         }
     }
 
-    // Method to validate a user's credentials
     public boolean validateUser(String username, String password, String role) {
-        String query = "SELECT * FROM users WHERE username = ? AND password = ? AND role = ?";
+        String query = "SELECT password, salt FROM users WHERE username = ? AND role = ?";
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, username);
-            stmt.setString(2, password);
-            stmt.setString(3, role);
+            stmt.setString(2, role);
 
             ResultSet rs = stmt.executeQuery();
-            return rs.next();
+            if (rs.next()) {
+                String storedHash = rs.getString("password");
+                String salt = rs.getString("salt");
+
+                // Hash the entered password with the stored salt
+                String enteredHash = PasswordUtil.hashPassword(password, salt);
+
+                // Compare hashes
+                return storedHash.equals(enteredHash);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
         }
+        return false;
     }
+
 
 
 }

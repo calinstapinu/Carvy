@@ -1,5 +1,6 @@
 package org.dealership.presentation;
 
+import java.io.Console;
 import java.util.Scanner;
 
 /**
@@ -34,7 +35,8 @@ public class MenuHandler {
      */
     public static String readText(String prompt) {
         System.out.print(prompt);
-        return scanner.next();
+        Scanner scanner = new Scanner(System.in);
+        return scanner.nextLine();
     }
 
     /**
@@ -76,5 +78,18 @@ public class MenuHandler {
         return scanner.nextFloat();
     }
 
+    public static String readPassword(String prompt) {
+        Console console = System.console();
+        if (console != null) {
+            // Use the secure Console input if available
+            char[] passwordArray = console.readPassword(prompt);
+            return new String(passwordArray);
+        } else {
+            // Fallback for IDEs like IntelliJ that don't support Console
+            System.out.print(prompt);
+            Scanner scanner = new Scanner(System.in);
+            return scanner.nextLine();
+        }
+    }
 
 }

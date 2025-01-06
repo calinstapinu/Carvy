@@ -822,7 +822,7 @@ public class ConsoleApp {
         System.out.println("===== " + role + " Login =====");
 
         String username = MenuHandler.readText("Username: ");
-        String password = MenuHandler.readText("Password: ");
+        String password = MenuHandler.readPassword("Password: ");
 
         if (userRepository.validateUser(username, password, role)) {
             System.out.println("Welcome, " + role + "!");
