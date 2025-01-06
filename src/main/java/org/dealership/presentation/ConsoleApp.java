@@ -52,6 +52,8 @@ public class ConsoleApp {
                 "In-Memory Repository"
         });
 
+        clearConsole();
+
         // Initialize repositories based on choice
         CarRepository carRepo = null;
         DBRepository<Car> dbCarRepo = null;
@@ -77,8 +79,6 @@ public class ConsoleApp {
 
         switch (repoChoice) {
             case 1 -> {
-                System.out.println("Using File-Based Repository.");
-
                 carRepo = new CarRepository(carFile, new CarParser());
                 clientRepo = new ClientRepository(clientFile, new ClientParser());
                 empRepo = new EmployeeRepository(employeeFile, new EmployeeParser());
@@ -86,8 +86,6 @@ public class ConsoleApp {
                 transactionRepo = new TransactionRepository(transactionFile, new TransactionParser(new CarParser(), new ClientParser()));
             }
             case 2 -> {
-                System.out.println("Using Database Repository.");
-
                 dbCarRepo = new DBRepository<>(Car.class, "cars");
                 dbClientRepo = new DBRepository<>(Client.class, "clients");
                 dbEmployeeRepo = new DBRepository<>(Employee.class, "employees");
@@ -95,7 +93,6 @@ public class ConsoleApp {
                 dbTransactionRepo = new DBRepository<>(Transaction.class, "transactions");
             }
             case 3 -> {
-                System.out.println("Using In-Memory Repository.");
                 inMemoryCarRepo = new InMemoryRepository<>();
                 inMemoryClientRepo = new InMemoryRepository<>();
                 inMemoryEmployeeRepo = new InMemoryRepository<>();
@@ -113,9 +110,9 @@ public class ConsoleApp {
 //
         CarService carService = null;
         if (useDatabase) {
-            carService = new CarService(null, dbCarRepo); // File-based repository is null
+            carService = new CarService(null, dbCarRepo, null); // File-based repository is null
         } else {
-            carService = new CarService(carRepo, null); // Database repository is null
+            carService = new CarService(carRepo, null, null); // Database repository is null
         }
 
         ClientService clientService = null;
@@ -150,7 +147,7 @@ public class ConsoleApp {
 
 
         // Initialize controllers
-        CarController carController = new CarController(carService, dbCarRepo);
+        CarController carController = new CarController(carService, dbCarRepo, inMemoryCarRepo);
         ClientController clientController = new ClientController(clientService, dbClientRepo);
         EmployeeController employeeController = new EmployeeController(employeeService, dbEmployeeRepo);
         LeasingController leasingController = new LeasingController(leasingService, dbLeasingRepo);
@@ -785,5 +782,10 @@ public class ConsoleApp {
         }
     }
 
+    public static void clearConsole() {
+        for (int i = 0; i < 50; i++) {
+            System.out.println();
+        }
+    }
 
 }
