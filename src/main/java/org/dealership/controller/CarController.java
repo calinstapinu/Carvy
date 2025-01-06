@@ -8,6 +8,7 @@ import org.dealership.exceptions.ValidationException;
 import org.dealership.model.Car;
 import org.dealership.model.enums.CarStatus;
 import org.dealership.repository.DBRepository;
+import org.dealership.repository.InMemoryRepository;
 import org.dealership.service.CarService;
 
 import java.util.List;
@@ -21,15 +22,18 @@ import java.util.Scanner;
 public class CarController {
     private final CarService carService;
     private final DBRepository<Car> dbCarRepo;
+    private final InMemoryRepository<Car> inMemoryCarRepo;
+
 
     /**
      * Constructs a new {@code CarController} with the specified car service.
      *
      * @param carService the service responsible for managing car operations
      */
-    public CarController(CarService carService, DBRepository<Car> dbCarRepo) {
+    public CarController(CarService carService, DBRepository<Car> dbCarRepo, InMemoryRepository<Car> inMemoryCarRepo) {
         this.carService = carService;
         this.dbCarRepo = dbCarRepo;
+        this.inMemoryCarRepo = inMemoryCarRepo;
     }
 
     /**

@@ -5,6 +5,7 @@ import org.dealership.exceptions.DatabaseException;
 import org.dealership.exceptions.ValidationException;
 import org.dealership.model.*;
 import org.dealership.model.enums.TransactionType;
+import org.dealership.repository.InMemoryRepository;
 import org.dealership.repository.entityRepos.*;
 import org.dealership.service.CarService;
 import org.dealership.service.ClientService;
@@ -47,44 +48,60 @@ public class ConsoleApp {
         System.out.println("Select the repository to use:");
         int repoChoice = MenuHandler.showMenu("Repository Selection", new String[]{
                 "File-Based Repository",
-                "Database Repository"
+                "Database Repository",
+                "In-Memory Repository"
         });
 
         // Initialize repositories based on choice
         CarRepository carRepo = null;
         DBRepository<Car> dbCarRepo = null;
+        InMemoryRepository<Car> inMemoryCarRepo = null;
 
         ClientRepository clientRepo = null;
         DBRepository<Client> dbClientRepo = null;
+        InMemoryRepository<Client> inMemoryClientRepo = null;
 
         EmployeeRepository empRepo = null;
         DBRepository<Employee> dbEmployeeRepo = null;
-
+        InMemoryRepository<Employee> inMemoryEmployeeRepo = null;
 
         LeasingRepository leasingRepo = null;
         DBRepository<Leasing> dbLeasingRepo = null;
+        InMemoryRepository<Leasing> inMemoryLeasingRepo = null;
 
         TransactionRepository transactionRepo = null;
         DBRepository<Transaction> dbTransactionRepo = null;
+        InMemoryRepository<Transaction> inMemoryTransactionRepo = null;
 
         boolean useDatabase = (repoChoice == 2);
 
-        if (repoChoice == 1) {
-            System.out.println("Using File-Based Repository.");
+        switch (repoChoice) {
+            case 1 -> {
+                System.out.println("Using File-Based Repository.");
 
-            carRepo = new CarRepository(carFile, new CarParser());
-            clientRepo = new ClientRepository(clientFile, new ClientParser());
-            empRepo = new EmployeeRepository(employeeFile, new EmployeeParser());
-            leasingRepo = new LeasingRepository(leasingFile, new LeasingParser(new CarParser(), new ClientParser()));
-            transactionRepo = new TransactionRepository(transactionFile, new TransactionParser(new CarParser(), new ClientParser()));
-        } else {
-            System.out.println("Using Database Repository.");
+                carRepo = new CarRepository(carFile, new CarParser());
+                clientRepo = new ClientRepository(clientFile, new ClientParser());
+                empRepo = new EmployeeRepository(employeeFile, new EmployeeParser());
+                leasingRepo = new LeasingRepository(leasingFile, new LeasingParser(new CarParser(), new ClientParser()));
+                transactionRepo = new TransactionRepository(transactionFile, new TransactionParser(new CarParser(), new ClientParser()));
+            }
+            case 2 -> {
+                System.out.println("Using Database Repository.");
 
-            dbCarRepo = new DBRepository<>(Car.class, "cars");
-            dbClientRepo = new DBRepository<>(Client.class, "clients");
-            dbEmployeeRepo = new DBRepository<>(Employee.class, "employees");
-            dbLeasingRepo = new DBRepository<>(Leasing.class, "leasings");
-            dbTransactionRepo = new DBRepository<>(Transaction.class, "transactions");
+                dbCarRepo = new DBRepository<>(Car.class, "cars");
+                dbClientRepo = new DBRepository<>(Client.class, "clients");
+                dbEmployeeRepo = new DBRepository<>(Employee.class, "employees");
+                dbLeasingRepo = new DBRepository<>(Leasing.class, "leasings");
+                dbTransactionRepo = new DBRepository<>(Transaction.class, "transactions");
+            }
+            case 3 -> {
+                System.out.println("Using In-Memory Repository.");
+                inMemoryCarRepo = new InMemoryRepository<>();
+                inMemoryClientRepo = new InMemoryRepository<>();
+                inMemoryEmployeeRepo = new InMemoryRepository<>();
+                inMemoryLeasingRepo = new InMemoryRepository<>();
+                inMemoryTransactionRepo = new InMemoryRepository<>();
+            }
         }
 
 
@@ -401,8 +418,8 @@ public class ConsoleApp {
             int choice = MenuHandler.showMenu("Manage Clients", new String[]{
                     "Add Client",
                     "List All Clients",
-                    "Find Client by ID",
-                    "Find Client by Name",
+                    //"Find Client by ID",
+                    //"Find Client by Name",
                     "Delete Client"
             });
 
@@ -445,15 +462,15 @@ public class ConsoleApp {
                         clientController.listAllClients();
                     }
                 }
-                case 3 -> {
+                case 5 -> {
                     long clientId = MenuHandler.readInt("Client ID: ");
                     clientController.findClientById(clientId);
                 }
                 case 4 -> {
-                    String name = MenuHandler.readText("Full Name: ");
+                    String name = MenuHandler.readText("Name: ");
                     clientController.findClientByName(name);
                 }
-                case 5 -> {
+                case 3 -> {
                     long clientId = MenuHandler.readLong("Client ID to delete: ");
                     if (useDatabase) {
                         clientController.deleteClientFromDB(clientId);
@@ -477,8 +494,8 @@ public class ConsoleApp {
             int choice = MenuHandler.showMenu("Manage Employees", new String[]{
                     "Add Employee",
                     "List All Employees",
-                    "Find Employee by ID",
-                    "Assign Car to Employee",
+                    //"Find Employee by ID",
+                    //"Assign Car to Employee",
                     "Delete Employee"
             });
 
@@ -518,7 +535,7 @@ public class ConsoleApp {
                         employeeController.listAllEmployees();
                     }
                 }
-                case 3 -> {
+                case 5 -> {
                     long employeeId = MenuHandler.readInt("Employee ID: ");
                     employeeController.findEmployeeById(employeeId);
                 }
@@ -534,7 +551,7 @@ public class ConsoleApp {
                         System.err.println("Error: " + e.getMessage());
                     }
                 }
-                case 5 -> {
+                case 3 -> {
                     long employeeId = MenuHandler.readInt("Employee ID: ");
                     if (useDatabase) {
                         employeeController.deleteEmployeeFromDB(employeeId);

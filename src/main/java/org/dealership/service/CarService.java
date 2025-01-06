@@ -3,6 +3,7 @@ package org.dealership.service;
 import org.dealership.model.Car;
 import org.dealership.model.enums.CarStatus;
 import org.dealership.repository.DBRepository;
+import org.dealership.repository.InMemoryRepository;
 import org.dealership.repository.entityRepos.CarRepository;
 
 import org.dealership.exceptions.BusinessLogicException;
@@ -21,10 +22,13 @@ import java.util.stream.Collectors;
 public class CarService {
     private final CarRepository carRepository;
     private final DBRepository<Car> dbCarRepository;
+    private final InMemoryRepository<Car> inMemoryCarRepository;
 
-    public CarService(CarRepository carRepository, DBRepository<Car> dbCarRepository) {
+
+    public CarService(CarRepository carRepository, DBRepository<Car> dbCarRepository, InMemoryRepository<Car> inMemoryCarRepository) {
         this.carRepository = carRepository;
         this.dbCarRepository = dbCarRepository;
+        this.inMemoryCarRepository = inMemoryCarRepository;
     }
 
     public void addCar(Car car) {
@@ -38,14 +42,29 @@ public class CarService {
     public List<Car> getAllCars() {
         return carRepository.readAll();
     }
+
     public List<Car> getAvailableCars() {
-        return carRepository.findAvailableCars();
+        if (dbCarRepository != null) {
+            return dbCarRepository.executeQuery("SELECT * FROM cars WHERE status = 'Available'");
+        } else {
+            return carRepository.findAvailableCars();
+        }
     }
+
     public List<Car> getSoldCars() {
-        return carRepository.findSoldCars();
+        if (dbCarRepository != null) {
+            return dbCarRepository.executeQuery("SELECT * FROM cars WHERE status = 'Sold'");
+        } else {
+            return carRepository.findSoldCars();
+        }
     }
+
     public List<Car> getLeasedCars() {
-        return carRepository.findLeasedCars();
+        if (dbCarRepository != null) {
+            return dbCarRepository.executeQuery("SELECT * FROM cars WHERE status = 'Leased'");
+        } else {
+            return carRepository.findLeasedCars();
+        }
     }
 
     /**
@@ -54,15 +73,40 @@ public class CarService {
      * @param carId the ID of the car to mark as sold
      * @throws IllegalArgumentException if the car is not available or does not exist
      */
+//    public void markCarAsSold(long carId) {
+//        Car car = carRepository.read(carId);
+//        if (car != null && car.getStatus() == CarStatus.AVAILABLE) {
+//            car.setStatus(CarStatus.SOLD);
+//            carRepository.update(car);
+//        } else {
+//            throw new IllegalArgumentException("Car not available for selling.");
+//        }
+//    }
+
     public void markCarAsSold(long carId) {
-        Car car = carRepository.read(carId);
-        if (car != null && car.getStatus() == CarStatus.AVAILABLE) {
-            car.setStatus(CarStatus.SOLD);
-            carRepository.update(car);
+        if (dbCarRepository != null) {
+            // Database repository logic
+            Car car = dbCarRepository.read(carId);
+            if (car != null && car.getStatus() == CarStatus.AVAILABLE) {
+                car.setStatus(CarStatus.SOLD);
+                dbCarRepository.update(car);
+                System.out.println("Car ID " + carId + " marked as SOLD in the database.");
+            } else {
+                throw new IllegalArgumentException("Car not available for selling.");
+            }
         } else {
-            throw new IllegalArgumentException("Car not available for selling.");
+            // File repository logic
+            Car car = carRepository.read(carId);
+            if (car != null && car.getStatus() == CarStatus.AVAILABLE) {
+                car.setStatus(CarStatus.SOLD);
+                carRepository.update(car);
+                System.out.println("Car ID " + carId + " marked as SOLD in the file repository.");
+            } else {
+                throw new IllegalArgumentException("Car not available for selling.");
+            }
         }
     }
+
 
     /**
      * Marks a car as leased by updating its status to {@link CarStatus#LEASED}.
@@ -71,14 +115,29 @@ public class CarService {
      * @throws IllegalArgumentException if the car is not available or does not exist
      */
     public void markCarAsLeased(long carId) {
-        Car car = carRepository.read(carId);
-        if (car != null && car.getStatus() == CarStatus.AVAILABLE) {
-            car.setStatus(CarStatus.LEASED);
-            carRepository.update(car);
+        if (dbCarRepository != null) {
+            // Database repository logic
+            Car car = dbCarRepository.read(carId);
+            if (car != null && car.getStatus() == CarStatus.AVAILABLE) {
+                car.setStatus(CarStatus.LEASED);
+                dbCarRepository.update(car);
+                System.out.println("Car ID " + carId + " marked as LEASED in the database.");
+            } else {
+                throw new IllegalArgumentException("Car not available for leasing.");
+            }
         } else {
-            throw new IllegalArgumentException("Car not available for leasing..");
+            // File repository logic
+            Car car = carRepository.read(carId);
+            if (car != null && car.getStatus() == CarStatus.AVAILABLE) {
+                car.setStatus(CarStatus.LEASED);
+                carRepository.update(car);
+                System.out.println("Car ID " + carId + " marked as LEASED in the file repository.");
+            } else {
+                throw new IllegalArgumentException("Car not available for leasing.");
+            }
         }
     }
+
 
     /**
      * Finds a car by its unique ID.
@@ -121,12 +180,26 @@ public class CarService {
      * @param name the name to search for
      * @return a list of {@link Car} entities matching the name
      */
+//    public List<Car> findCarsByName(String name) {
+//        return carRepository.readAll().stream()
+//                .filter(car -> car.getModel().toLowerCase().contains(name.toLowerCase()) ||
+//                        car.getBrand().toLowerCase().contains(name.toLowerCase()))
+//                .collect(Collectors.toList());
+//    }
     public List<Car> findCarsByName(String name) {
-        return carRepository.readAll().stream()
-                .filter(car -> car.getModel().toLowerCase().contains(name.toLowerCase()) ||
-                        car.getBrand().toLowerCase().contains(name.toLowerCase()))
-                .collect(Collectors.toList());
+        if (dbCarRepository != null) {
+            // Database repository logic
+            String query = "SELECT * FROM cars WHERE LOWER(brand) LIKE ? OR LOWER(model) LIKE ?";
+            return dbCarRepository.executeQueryWithParams(query, "%" + name.toLowerCase() + "%", "%" + name.toLowerCase() + "%");
+        } else {
+            // File repository logic
+            return carRepository.readAll().stream()
+                    .filter(car -> car.getModel().toLowerCase().contains(name.toLowerCase()) ||
+                            car.getBrand().toLowerCase().contains(name.toLowerCase()))
+                    .collect(Collectors.toList());
+        }
     }
+
 
     /**
      * Retrieves cars newer than the specified year.
@@ -135,10 +208,18 @@ public class CarService {
      * @return a list of {@link Car} entities newer than the specified year
      */
     public List<Car> getCarsNewerThan(int year) {
-        return carRepository.readAll().stream()
-                .filter(car -> car.getYear() > year)
-                .collect(Collectors.toList());
+        if (dbCarRepository != null) {
+            // Database repository logic
+            String query = "SELECT * FROM cars WHERE year > " + year;
+            return dbCarRepository.executeQuery(query);
+        } else {
+            // File repository logic
+            return carRepository.readAll().stream()
+                    .filter(car -> car.getYear() > year)
+                    .collect(Collectors.toList());
+        }
     }
+
 
     /**
      * Retrieves cars within the specified budget.
@@ -147,10 +228,18 @@ public class CarService {
      * @return a list of {@link Car} entities within the budget
      */
     public List<Car> getCarsWithinBudget(float maxBudget) {
-        return carRepository.readAll().stream() // Read all cars
-                .filter(car -> car.getPrice() <= maxBudget) // Filter cars within the budget
-                .collect(Collectors.toList());
+        if (dbCarRepository != null) {
+            // Database repository logic
+            String query = "SELECT * FROM cars WHERE price <= " + maxBudget;
+            return dbCarRepository.executeQuery(query);
+        } else {
+            // File repository logic
+            return carRepository.readAll().stream()
+                    .filter(car -> car.getPrice() <= maxBudget)
+                    .collect(Collectors.toList());
+        }
     }
+
 
     /**
      * Retrieves cars sorted by their year of manufacture in ascending order.
@@ -158,22 +247,28 @@ public class CarService {
      * @return a list of {@link Car} entities sorted by year
      */
     public List<Car> getCarsSortedByYearAscending() {
-        List<Car> cars = carRepository.readAll();
-        cars.sort((car1, car2) -> Integer.compare(car1.getYear(), car2.getYear()));
-        return cars;
+        if (dbCarRepository != null) {
+            return dbCarRepository.executeQuery("SELECT * FROM cars ORDER BY year ASC");
+        } else {
+            List<Car> cars = carRepository.readAll();
+            cars.sort((car1, car2) -> Integer.compare(car1.getYear(), car2.getYear()));
+            return cars;
+        }
     }
-
     /**
      * Retrieves cars sorted by their price in ascending order.
      *
      * @return a list of {@link Car} entities sorted by price
      */
     public List<Car> getCarsSortedByPriceAscending() {
-        List<Car> cars = carRepository.readAll();
-        cars.sort((car1, car2) -> Float.compare(car1.getPrice(), car2.getPrice()));
-        return cars;
+        if (dbCarRepository != null) {
+            return dbCarRepository.executeQuery("SELECT * FROM cars ORDER BY price ASC");
+        } else {
+            List<Car> cars = carRepository.readAll();
+            cars.sort((car1, car2) -> Float.compare(car1.getPrice(), car2.getPrice()));
+            return cars;
+        }
     }
-
     public void deleteCarFromDB(long carId) {
         dbCarRepository.delete(carId);
     }

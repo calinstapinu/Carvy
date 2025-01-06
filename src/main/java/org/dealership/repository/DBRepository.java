@@ -3,6 +3,8 @@ import org.dealership.model.HasID;
 import org.dealership.model.*;
 import java.sql.*;
 import org.dealership.exceptions.DatabaseException;
+import org.dealership.model.enums.CarStatus;
+
 import java.util.*;
 import java.lang.reflect.Field;
 
@@ -405,6 +407,53 @@ public class DBRepository<T extends HasID> implements IRepository<T> {
         DBRepository<Client> clientRepo = new DBRepository<>(Client.class, "clients");
         return clientRepo.read(clientId);
     }
+
+
+    public List<T> executeQuery(String query) {
+        List<T> results = new ArrayList<>();
+        try (Connection conn = getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+
+            while (rs.next()) {
+                results.add(mapResultSetToObject(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return results;
+    }
+
+    public List<Car> executeQueryWithParams(String query, String... params) {
+        List<Car> cars = new ArrayList<>();
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            // Set the query parameters
+            for (int i = 0; i < params.length; i++) {
+                stmt.setString(i + 1, params[i]);
+            }
+
+            // Execute the query
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Car car = new Car(
+                        rs.getLong("car_id"),
+                        rs.getString("brand"),
+                        rs.getString("model"),
+                        rs.getInt("year"),
+                        rs.getFloat("price"),
+                        rs.getInt("mileage"),
+                        CarStatus.valueOf(rs.getString("status").toUpperCase())
+                );
+                cars.add(car);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return cars;
+    }
+
 
 
 }

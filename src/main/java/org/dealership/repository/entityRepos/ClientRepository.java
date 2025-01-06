@@ -22,7 +22,7 @@ public class ClientRepository extends FileRepository<Client> {
      */
     public Client findByName(String name) {
         return readAll().stream()
-                .filter(client -> client.getFullName().equalsIgnoreCase(name))
+                .filter(client -> client.getFirstName().equalsIgnoreCase(name))
                 .findFirst()
                 .orElse(null);
     }
